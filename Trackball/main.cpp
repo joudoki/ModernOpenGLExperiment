@@ -12,6 +12,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <string>
+#include <vector>
+
+#include "GLProgram.h"
+
 int acquireContext() {
     int width = 800, height = 600;
 
@@ -78,84 +83,13 @@ void printLog(GLuint object) {
     delete[] log;
 }
 
-typedef struct {
-    GLuint programID;
-    GLuint vertShaderID;
-    GLuint fragShaderID;
-
-    GLuint* attribs;
-    GLuint attribCount;
-} program_t;
-
-GLint compileProgram(program_t& program, const char* vertShader, const char* fragShader, size_t argc, const char** argv) {
-    GLint compileResult = GL_FALSE, linkResult = GL_FALSE;
-
-    // Create and compile the vertex shader
-    program.vertShaderID = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(program.vertShaderID, 1, &vertShader, NULL);
-    glCompileShader(program.vertShaderID);
-
-    // Check the compilation status of the vertex shader
-    glGetShaderiv(program.vertShaderID, GL_COMPILE_STATUS, &compileResult);
-
-    if (!compileResult) {
-        fprintf(stderr, "Error in vertex shader\n");
-        printLog(program.vertShaderID);
-        return 0;
-    }
-
-    // Create and compile the fragment shader
-    program.fragShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(program.fragShaderID, 1, &fragShader, NULL);
-    glCompileShader(program.fragShaderID);
-
-    // Check compilation of fragment shader
-    glGetShaderiv(program.fragShaderID, GL_COMPILE_STATUS, &compileResult);
-
-    if (!compileResult) {
-        fprintf(stderr, "Error in fragment shader\n");
-        printLog(program.fragShaderID);
-        return 0;
-    }
-
-    // Link the two into a program
-    program.programID = glCreateProgram();
-    glAttachShader(program.programID, program.vertShaderID);
-    glAttachShader(program.programID, program.fragShaderID);
-    glLinkProgram(program.programID);
-
-    // Check link status
-    glGetProgramiv(program.programID, GL_LINK_STATUS, &linkResult);
-
-    if (!linkResult) {
-        fprintf(stderr, "Error during linking\n");
-        printLog(program.programID);
-        return 0;
-    }
-
-    // Attach attributes
-    program.attribCount = argc;
-    program.attribs = new GLuint[argc];
-    for (size_t i=0; i<argc; ++i) {
-        program.attribs[i] = glGetAttribLocation(program.programID, argv[i]);
-
-        if (program.attribs[i] == -1) {
-            fprintf(stderr, "Could not bind attribute %s\n", argv[i]);
-            delete[] program.attribs;
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
 
     if (!acquireContext()) return EXIT_FAILURE;
     if (!acquireFunctions()) return EXIT_FAILURE;
     
-    printf("OpenGL %s\n", glGetString(GL_VERSION));  
+    printf("OpenGL %s\n", glGetString(GL_VERSION));
     
     GLfloat verts[] = {
          0.0f,  0.8f,
@@ -178,13 +112,18 @@ int main(int argc, char** argv) {
         "  gl_FragColor[2] = 1.0;\n"
         "}\n";
 
-    const char* attribs = "coord2d";
+    // mumble mumble vs2012 c++11 initialization lists mumble mumble
+    std::vector<std::string> attribs;
+    attribs.push_back("coord2d");
 
-    program_t program;
-    if (!compileProgram(program, vertShader, fragShader, 1, &attribs)) {
+    GLProgram* program = GLProgram::Compile(vertShader, fragShader, attribs);
+    
+    if (program == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
+
+    GLuint coord2d = (*program)["coord2d"];
 
     // Main render loop
     while(true) {
@@ -193,20 +132,20 @@ int main(int argc, char** argv) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Use the program and bind the attribute
-        glUseProgram(program.programID);
+        program->Activate();
 
         // Send the verts as an attribute to the program
-        glEnableVertexAttribArray(program.attribs[0]);
+        glEnableVertexAttribArray(coord2d);
         glVertexAttribPointer(
-            program.attribs[0], // Bind to coord2d
-            2,                  // 2 attributes per vert
-            GL_FLOAT,           // Type of element
-            GL_FALSE,           // Do not normalize
-            0,                  // Don't skip any elements
+            coord2d,    // Bind to coord2d
+            2,          // 2 attributes per vert
+            GL_FLOAT,   // Type of element
+            GL_FALSE,   // Do not normalize
+            0,          // Don't skip any elements
             verts
         );
         glDrawArrays(GL_TRIANGLES, 0, 3);   // Send 3 vertices to the shader
-        glDisableVertexAttribArray(program.attribs[0]);
+        glDisableVertexAttribArray(coord2d);
 
         // Swap out buffer to render screen
         glfwSwapBuffers();

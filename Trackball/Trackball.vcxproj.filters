@@ -21,9 +21,15 @@
     <ClCompile Include="gl_core_3_3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GLProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl_core_3_3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLProgram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
