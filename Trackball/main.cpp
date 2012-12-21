@@ -76,14 +76,16 @@ int main(int argc, char** argv) {
         "attribute vec3 color;\n"
         "void main(void) {\n"
         "  gl_Position = transform * vec4(coord, 0.0, 1.0);\n"
+        "  gl_FrontColor = vec4(color, 1.0);\n"
         "}\n";
 
     const char* fragShader =
         "#version 120\n"
         "void main(void) {\n"
-        "  gl_FragColor[2] = gl_FragCoord.x/800.0;\n"
-        "  gl_FragColor[1] = gl_FragCoord.y/600.0;\n"
-        "  gl_FragColor[0] = 1.0;\n"
+        //"  gl_FragColor[2] = gl_FragCoord.x/800.0;\n"
+        //"  gl_FragColor[1] = gl_FragCoord.y/600.0;\n"
+        //"  gl_FragColor[0] = 1.0;\n"
+        "  gl_FragColor = gl_Color;\n"
         "}\n";
 
     GLProgram* program = GLProgram::Create(vertShader, fragShader);
@@ -99,9 +101,9 @@ int main(int argc, char** argv) {
         Upload vertex data into VBOs
     */
     GLfloat vertAttributeData[] = {
-        0.0f, 0.0f,//    1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f,//    0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f//    0.0f, 0.0f, 0.0f
+        0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f,    0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f,    0.0f, 0.0f, 1.0f
     };
 
     GLuint vboVertAttributeData;
@@ -117,10 +119,10 @@ int main(int argc, char** argv) {
     glBindVertexArray(vao);
 
     GLint attrCoord = program->GetAttribute("coord");
-    //GLint attrColor = program->GetAttribute("color");
+    GLint attrColor = program->GetAttribute("color");
 
     glEnableVertexAttribArray(attrCoord);
-    //glEnableVertexAttribArray(attrColor);
+    glEnableVertexAttribArray(attrColor);
         
     // Still in effect from above call
     //glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
@@ -130,11 +132,10 @@ int main(int argc, char** argv) {
         2,
         GL_FLOAT,
         GL_FALSE,
-        0,
+        5 * sizeof(float),
         0
     );
 
-    /*
     glVertexAttribPointer(
         attrColor,
         3,
@@ -143,7 +144,6 @@ int main(int argc, char** argv) {
         5 * sizeof(float),
         (void*)(2 * sizeof(float))
     );
-    8/
 
     /*
         Setup uniform variables
