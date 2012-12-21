@@ -65,30 +65,6 @@ int main(int argc, char** argv) {
     if (!acquireFunctions()) return EXIT_FAILURE;
     
     printf("OpenGL %s\n", glGetString(GL_VERSION));
-    
-    GLfloat vertCoords[] = {
-         0.0f,  0.8f,
-        -0.8f, -0.8f,
-         0.8f, -0.8f
-    };
-
-    GLuint vboCoords;
-    glGenBuffers(1, &vboCoords);
-    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
-
-    /*
-    GLfloat vertColors[] = {
-        1.0, 1.0, 0.0,
-        0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0,
-    };
-
-    GLuint vboColors;
-    glGenBuffers(1, &vboColors);
-    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
-    */
 
     const char* vertShader =
         "#version 120\n"
@@ -112,8 +88,51 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     program->Activate();
+    
+    GLfloat vertCoords[] = {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, 1.0f,
+
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, -1.0f,
+
+        0.0f, 0.0f,
+        -1.0f, 0.0f,
+        0.0f, -1.0f,
+
+        0.0f, 0.0f,
+        -1.0f, 0.0f,
+        0.0f, 1.0f
+    };
+
+    GLuint vboCoords;
+    glGenBuffers(1, &vboCoords);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
+
+    /*
+    GLfloat vertColors[] = {
+        1.0, 1.0, 0.0,
+        0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0,
+    };
+
+    GLuint vboColors;
+    glGenBuffers(1, &vboColors);
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
+    */
+
+    /*glm::mat4 matrix = glm::rotate(
+        glm::mat4(1.0f),
+        30.0f,
+        glm::vec3(0.0f, 0.0f, 1.0f)
+    );*/
 
     glm::mat4 matrix = glm::mat4(1.0f);
+        
     glUniformMatrix4fv(
         program->GetUniform("transform"),
         1,          // Count
@@ -145,7 +164,7 @@ int main(int argc, char** argv) {
             0,          // Don't skip any elements
             NULL        // Pull data from current bound VBO
         );
-        glDrawArrays(GL_TRIANGLES, 0, 3);   // Send 3 vertices to the shader
+        glDrawArrays(GL_TRIANGLES, 0, 12);   // Send 3 vertices to the shader
         glDisableVertexAttribArray(coord2d);
 
         //glBindBuffer(GL_ARRAY_BUFFER, 
