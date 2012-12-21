@@ -77,6 +77,19 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
 
+    /*
+    GLfloat vertColors[] = {
+        1.0, 1.0, 0.0,
+        0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0,
+    };
+
+    GLuint vboColors;
+    glGenBuffers(1, &vboColors);
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
+    */
+
     const char* vertShader =
         "#version 120\n"
         "attribute vec2 coord2d;\n"
@@ -95,6 +108,7 @@ int main(int argc, char** argv) {
     // mumble mumble vs2012 c++11 initialization lists mumble mumble
     std::vector<std::string> attribs;
     attribs.push_back("coord2d");
+    attribs.push_back("v_color");
 
     GLProgram* program = GLProgram::Create(vertShader, fragShader, attribs);
     
@@ -103,7 +117,8 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    GLuint coord2d = (*program)["coord2d"];
+    GLuint coord2d = program->GetAttribute("coord2d");
+    //GLuint  vColor = program->GetAttribute("v_color");
 
     // Main render loop
     while(true) {
@@ -128,6 +143,8 @@ int main(int argc, char** argv) {
         );
         glDrawArrays(GL_TRIANGLES, 0, 3);   // Send 3 vertices to the shader
         glDisableVertexAttribArray(coord2d);
+
+        //glBindBuffer(GL_ARRAY_BUFFER, 
 
         // Swap out buffer to render screen
         glfwSwapBuffers();

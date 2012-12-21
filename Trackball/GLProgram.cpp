@@ -78,21 +78,7 @@ GLProgram* GLProgram::Create(
     if (!(fragID = CompileShader(fragShader, GL_FRAGMENT_SHADER))) return NULL;
     if (!(progID = LinkProgram(vertID, fragID))) return NULL;
     
-    GLProgram* program = new GLProgram(progID, vertID, fragID);
-
-    for (auto it = attributes.begin(); it != attributes.end(); ++it) {
-        GLuint attribID = glGetAttribLocation(progID, (*it).c_str());
-
-        if (attribID == -1) {
-            fprintf(stderr, "Could not bind attribute %s\n", (*it));
-            delete program;
-            return NULL;
-        }
-
-        program->attribs[(*it)] = attribID;
-    }
-
-    return program;
+    return new GLProgram(progID, vertID, fragID);
 }
 
 void GLProgram::Activate() {

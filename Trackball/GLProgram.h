@@ -14,7 +14,7 @@ private:
     GLuint vertShaderID;
     GLuint fragShaderID;
 
-    std::map<std::string, GLuint> attribs;
+    //std::map<std::string, GLuint> attribs;
 
     GLProgram(GLuint progID, GLuint vertID, GLuint fragID) :
         programID(progID), vertShaderID(vertID), fragShaderID(fragID) {};
@@ -34,11 +34,22 @@ public:
 
     void Activate();
 
-    GLuint operator[] (std::string attrib) {
-        auto it = attribs.find(attrib);
-        return it == attribs.end()
-            ? 0
-            : it->second;
+    GLuint GetAttribute(std::string name) {
+        GLuint id = glGetAttribLocation(programID, name.c_str());
+
+        if (id == -1)
+            fprintf(stderr, "Could not bind attribute %s\n", name);
+
+        return id;
+    }
+
+    GLuint GetUniform(std::string name) {
+        GLuint id = glGetUniformLocation(programID, name.c_str());
+
+        if (id == -1)
+            fprintf(stderr, "Could not bind attribute %s\n", name);
+
+        return id;
     }
 };
 
