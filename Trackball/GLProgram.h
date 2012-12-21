@@ -40,7 +40,7 @@ public:
         GLint id = glGetUniformLocation(programID, name.c_str());
 
         if (id == -1)
-            fprintf(stderr, "Could not bind attribute %s\n", name);
+            fprintf(stderr, "Could not bind uniform %s\n", name);
 
         return id;
     }

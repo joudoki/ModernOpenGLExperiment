@@ -66,71 +66,92 @@ int main(int argc, char** argv) {
     
     printf("OpenGL %s\n", glGetString(GL_VERSION));
 
+    /*
+        Setup the program & shaders
+    */
     const char* vertShader =
         "#version 120\n"
         "uniform mat4 transform;\n"
-        "attribute vec2 coord2d;\n"
+        "attribute vec2 coord;\n"
+        "attribute vec3 color;\n"
         "void main(void) {\n"
-        "  gl_Position = transform * vec4(coord2d, 0.0, 1.0);\n"
+        "  gl_Position = transform * vec4(coord, 0.0, 1.0);\n"
         "}\n";
 
     const char* fragShader =
         "#version 120\n"
         "void main(void) {\n"
-        "  gl_FragColor[0] = gl_FragCoord.x/800.0;\n"
+        "  gl_FragColor[2] = gl_FragCoord.x/800.0;\n"
         "  gl_FragColor[1] = gl_FragCoord.y/600.0;\n"
-        "  gl_FragColor[2] = 1.0;\n"
+        "  gl_FragColor[0] = 1.0;\n"
         "}\n";
 
     GLProgram* program = GLProgram::Create(vertShader, fragShader);
+
     if (program == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
+
     program->Activate();
     
-    GLfloat vertCoords[] = {
-        0.1f, 0.1f,
-        1.0f, 0.0f,
-        0.0f, 1.0f,
-
-        0.1f, -0.1f,
-        1.0f, 0.0f,
-        0.0f, -1.0f,
-
-        -0.1f, -0.1f,
-        -1.0f, 0.0f,
-        0.0f, -1.0f,
-
-        -0.1f, 0.1f,
-        -1.0f, 0.0f,
-        0.0f, 1.0f
+    /*
+        Upload vertex data into VBOs
+    */
+    GLfloat vertAttributeData[] = {
+        0.0f, 0.0f,//    1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f,//    0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f,//    0.0f, 0.0f, 0.0f
     };
-
-    GLuint vboCoords;
-    glGenBuffers(1, &vboCoords);
-    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
 
     /*
-    GLfloat vertColors[] = {
-        1.0, 1.0, 0.0,
-        0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0,
-    };
-
-    GLuint vboColors;
-    glGenBuffers(1, &vboColors);
-    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
+    GLuint vboVertAttributeData;
+    glGenBuffers(1, &vboVertAttributeData);
+    glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vboVertAttributeData), &vboVertAttributeData, GL_STATIC_DRAW);
     */
 
-    /*glm::mat4 matrix = glm::rotate(
-        glm::mat4(1.0f),
-        30.0f,
-        glm::vec3(0.0f, 0.0f, 1.0f)
-    );*/
+    /*
+        Setup the VAO
+    */
+    /*
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    */
 
+    GLint attrCoord = program->GetAttribute("coord");
+    //GLint attrColor = program->GetAttribute("color");
+
+    glEnableVertexAttribArray(attrCoord);
+    //glEnableVertexAttribArray(attrColor);
+        
+    // Still in effect from above call
+    // glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
+
+    glVertexAttribPointer(
+        attrCoord,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        0,
+        vertAttributeData
+    );
+
+    /*
+    glVertexAttribPointer(
+        attrColor,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        5 * sizeof(float),
+        (void*)(2 * sizeof(float))
+    );
+    8/
+
+    /*
+        Setup uniform variables
+    */
     glm::mat4 matrix = glm::mat4(1.0f);
         
     glUniformMatrix4fv(
@@ -140,36 +161,14 @@ int main(int argc, char** argv) {
         glm::value_ptr(matrix)
     );
 
-    GLint coord2d = program->GetAttribute("coord2d");
-    //GLuint  vColor = program->GetAttribute("v_color");
-
-    // Main render loop
     while(true) {
-        // Rendering here
-        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Use the program and bind the attribute
-        //program->Activate();
+        // Still in effect from above
+        // glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        // Send the verts as an attribute to the program
-        glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
-
-        glEnableVertexAttribArray(coord2d);
-        glVertexAttribPointer(
-            coord2d,    // Bind to coord2d
-            2,          // 2 attributes per vert
-            GL_FLOAT,   // Type of element
-            GL_FALSE,   // Do not normalize
-            0,          // Don't skip any elements
-            NULL        // Pull data from current bound VBO
-        );
-        glDrawArrays(GL_TRIANGLES, 0, 12);   // Send 3 vertices to the shader
-        glDisableVertexAttribArray(coord2d);
-
-        //glBindBuffer(GL_ARRAY_BUFFER, 
-
-        // Swap out buffer to render screen
         glfwSwapBuffers();
         
         // Check for stopping conditions
@@ -177,8 +176,11 @@ int main(int argc, char** argv) {
             break;
     }
 
-    glDeleteBuffers(1, &vboCoords);
+    // Cleanup
+    //glDeleteBuffers(1, &vboVertAttributeData);
+    //glDeleteVertexArrays(1, &vao);
     
     glfwTerminate();
+
     return EXIT_SUCCESS;
 }
