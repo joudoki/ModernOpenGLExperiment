@@ -72,10 +72,10 @@ int main(int argc, char** argv) {
     const char* vertShader =
         "#version 120\n"
         "uniform mat4 transform;\n"
-        "attribute vec2 coord;\n"
+        "attribute vec3 coord;\n"
         "attribute vec3 color;\n"
         "void main(void) {\n"
-        "  gl_Position = transform * vec4(coord, 0.0, 1.0);\n"
+        "  gl_Position = transform * vec4(coord, 1.0);\n"
         "  gl_FrontColor = vec4(color, 1.0);\n"
         "}\n";
 
@@ -100,10 +100,19 @@ int main(int argc, char** argv) {
     /*
         Upload vertex data into VBOs
     */
+    GLuint vertCount = 9;
     GLfloat vertAttributeData[] = {
-        0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f,    0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f,    0.0f, 0.0f, 1.0f
+        0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+        0.5f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+        
+        0.0f, 0.0f, 0.2f,    0.0f, 0.0f, 1.0f,
+        0.8f, 1.0f, 0.2f,    0.0f, 0.0f, 1.0f,
+        1.0f, 0.8f, 0.2f,    0.0f, 0.0f, 1.0f,
+
+        0.0f, 0.0f, 0.5f,    0.0f, 1.0f, 0.0f,
+        1.0f, 0.0f, 0.5f,    0.0f, 1.0f, 0.0f,
+        0.0f, 0.5f, 0.5f,    0.0f, 1.0f, 0.0f
     };
 
     GLuint vboVertAttributeData;
@@ -129,10 +138,10 @@ int main(int argc, char** argv) {
 
     glVertexAttribPointer(
         attrCoord,
-        2,
+        3,
         GL_FLOAT,
         GL_FALSE,
-        5 * sizeof(float),
+        6 * sizeof(float),
         0
     );
 
@@ -141,8 +150,8 @@ int main(int argc, char** argv) {
         3,
         GL_FLOAT,
         GL_FALSE,
-        5 * sizeof(float),
-        (void*)(2 * sizeof(float))
+        6 * sizeof(float),
+        (void*)(3 * sizeof(float))
     );
 
     /*
@@ -163,7 +172,7 @@ int main(int argc, char** argv) {
 
         // Still in effect from above
         // glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, vertCount);
 
         glfwSwapBuffers();
         
