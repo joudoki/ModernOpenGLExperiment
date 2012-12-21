@@ -92,9 +92,10 @@ int main(int argc, char** argv) {
 
     const char* vertShader =
         "#version 120\n"
+        "uniform mat4 transform;\n"
         "attribute vec2 coord2d;\n"
         "void main(void) {\n"
-        "  gl_Position = vec4(coord2d, 0.0, 1.0);\n"
+        "  gl_Position = transform * vec4(coord2d, 0.0, 1.0);\n"
         "}\n";
 
     const char* fragShader =
@@ -105,19 +106,22 @@ int main(int argc, char** argv) {
         "  gl_FragColor[2] = 1.0;\n"
         "}\n";
 
-    // mumble mumble vs2012 c++11 initialization lists mumble mumble
-    std::vector<std::string> attribs;
-    attribs.push_back("coord2d");
-    attribs.push_back("v_color");
-
-    GLProgram* program = GLProgram::Create(vertShader, fragShader, attribs);
-    
+    GLProgram* program = GLProgram::Create(vertShader, fragShader);
     if (program == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
+    program->Activate();
 
-    GLuint coord2d = program->GetAttribute("coord2d");
+    glm::mat4 matrix = glm::mat4(1.0f);
+    glUniformMatrix4fv(
+        program->GetUniform("transform"),
+        1,          // Count
+        GL_FALSE,   // Do not transpose
+        glm::value_ptr(matrix)
+    );
+
+    GLint coord2d = program->GetAttribute("coord2d");
     //GLuint  vColor = program->GetAttribute("v_color");
 
     // Main render loop
@@ -127,7 +131,7 @@ int main(int argc, char** argv) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Use the program and bind the attribute
-        program->Activate();
+        //program->Activate();
 
         // Send the verts as an attribute to the program
         glBindBuffer(GL_ARRAY_BUFFER, vboCoords);

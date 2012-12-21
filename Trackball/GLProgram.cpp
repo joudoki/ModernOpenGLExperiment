@@ -66,11 +66,7 @@ GLuint GLProgram::LinkProgram(GLuint vertID, GLuint fragID) {
     return id;
 }
 
-GLProgram* GLProgram::Create(
-    const char* vertShader,
-    const char* fragShader,
-    std::vector<std::string> attributes
-) {
+GLProgram* GLProgram::Create(const char* vertShader, const char* fragShader) {
     GLuint vertID, fragID, progID;
 
     // Compile and link the shaders

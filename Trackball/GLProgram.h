@@ -14,8 +14,6 @@ private:
     GLuint vertShaderID;
     GLuint fragShaderID;
 
-    //std::map<std::string, GLuint> attribs;
-
     GLProgram(GLuint progID, GLuint vertID, GLuint fragID) :
         programID(progID), vertShaderID(vertID), fragShaderID(fragID) {};
     
@@ -26,25 +24,20 @@ private:
 public:
     ~GLProgram();
 
-    static GLProgram* Create(
-        const char* vertShader,
-        const char* fragShader,
-        std::vector<std::string> attributes
-    );
+    static GLProgram* Create(const char* vertShader, const char* fragShader);
 
     void Activate();
 
-    GLuint GetAttribute(std::string name) {
-        GLuint id = glGetAttribLocation(programID, name.c_str());
+    GLint GetAttribute(std::string name) {
+        GLint id = glGetAttribLocation(programID, name.c_str());
 
         if (id == -1)
             fprintf(stderr, "Could not bind attribute %s\n", name);
 
         return id;
     }
-
-    GLuint GetUniform(std::string name) {
-        GLuint id = glGetUniformLocation(programID, name.c_str());
+    GLint GetUniform(std::string name) {
+        GLint id = glGetUniformLocation(programID, name.c_str());
 
         if (id == -1)
             fprintf(stderr, "Could not bind attribute %s\n", name);
