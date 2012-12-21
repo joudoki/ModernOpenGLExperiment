@@ -66,11 +66,16 @@ int main(int argc, char** argv) {
     
     printf("OpenGL %s\n", glGetString(GL_VERSION));
     
-    GLfloat verts[] = {
+    GLfloat vertCoords[] = {
          0.0f,  0.8f,
         -0.8f, -0.8f,
          0.8f, -0.8f
     };
+
+    GLuint vboCoords;
+    glGenBuffers(1, &vboCoords);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
 
     const char* vertShader =
         "#version 120\n"
@@ -82,8 +87,8 @@ int main(int argc, char** argv) {
     const char* fragShader =
         "#version 120\n"
         "void main(void) {\n"
-        "  gl_FragColor[0] = 0.0;\n"
-        "  gl_FragColor[1] = 0.0;\n"
+        "  gl_FragColor[0] = gl_FragCoord.x/800.0;\n"
+        "  gl_FragColor[1] = gl_FragCoord.y/600.0;\n"
         "  gl_FragColor[2] = 1.0;\n"
         "}\n";
 
@@ -110,6 +115,8 @@ int main(int argc, char** argv) {
         program->Activate();
 
         // Send the verts as an attribute to the program
+        glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
+
         glEnableVertexAttribArray(coord2d);
         glVertexAttribPointer(
             coord2d,    // Bind to coord2d
@@ -117,7 +124,7 @@ int main(int argc, char** argv) {
             GL_FLOAT,   // Type of element
             GL_FALSE,   // Do not normalize
             0,          // Don't skip any elements
-            verts
+            NULL        // Pull data from current bound VBO
         );
         glDrawArrays(GL_TRIANGLES, 0, 3);   // Send 3 vertices to the shader
         glDisableVertexAttribArray(coord2d);
@@ -129,6 +136,8 @@ int main(int argc, char** argv) {
         if (glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
             break;
     }
+
+    glDeleteBuffers(1, &vboCoords);
     
     glfwTerminate();
     return EXIT_SUCCESS;
