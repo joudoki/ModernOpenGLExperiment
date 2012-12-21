@@ -1,64 +1,84 @@
 #include "GLProgram.h"
 
-GLProgram* GLProgram::Compile(
+void GLProgram::PrintLog(GLuint object) {
+    char* log;
+    GLint logLength = 0;
+
+    if (glIsShader(object)) {
+        glGetShaderiv(object, GL_INFO_LOG_LENGTH, &logLength);
+    } else if (glIsProgram(object)) {
+        glGetProgramiv(object, GL_INFO_LOG_LENGTH, &logLength);
+    } else {
+        fprintf(stderr, "printLog: Not a shader or a program\n");
+    }
+
+    log = new char[logLength];
+
+    if (glIsShader(object)) {
+        glGetShaderInfoLog(object, logLength, NULL, log);
+    } else  if (glIsProgram(object)) {
+        glGetProgramInfoLog(object, logLength, NULL, log);
+    }
+
+    fprintf(stderr, "%s", log);
+
+    delete[] log;
+}
+
+GLuint GLProgram::CompileShader(const char* source, GLenum type) {
+    GLuint id = glCreateShader(type);
+    glShaderSource(id, 1, &source, NULL);
+
+    GLint compileResult;
+    glCompileShader(id);
+    glGetShaderiv(id, GL_COMPILE_STATUS, &compileResult);
+
+    if (!compileResult) {
+        fprintf(stderr, "Error in vertex shader\n");
+
+        PrintLog(id);
+        glDeleteShader(id);
+
+        return 0;
+    }
+
+    return id;
+}
+
+GLuint GLProgram::LinkProgram(GLuint vertID, GLuint fragID) {
+    GLuint id = glCreateProgram();
+    glAttachShader(id, vertID);
+    glAttachShader(id, fragID);
+
+    GLint linkResult;
+    glLinkProgram(id);
+    glGetProgramiv(id, GL_LINK_STATUS, &linkResult);
+
+    if (!linkResult) {
+        fprintf(stderr, "Error during linking\n");
+        
+        PrintLog(id);
+        glDeleteProgram(id);
+
+        return 0;
+    }
+
+    return id;
+}
+
+GLProgram* GLProgram::Create(
     const char* vertShader,
     const char* fragShader,
     std::vector<std::string> attributes
 ) {
-    GLint compileResult = GL_FALSE, linkResult = GL_FALSE;
     GLuint vertID, fragID, progID;
 
-    // Create and compile the vertex shader
-    vertID = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertID, 1, &vertShader, NULL);
-    glCompileShader(vertID);
-
-    // Check the compilation status of the vertex shader
-    glGetShaderiv(vertID, GL_COMPILE_STATUS, &compileResult);
-
-    if (!compileResult) {
-        fprintf(stderr, "Error in vertex shader\n");
-        //printLog(vertID);
-        // TODO: free the shader?
-        return NULL;
-    }
-
-    // Create and compile the fragment shader
-    fragID = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragID, 1, &fragShader, NULL);
-    glCompileShader(fragID);
-
-    // Check compilation of fragment shader
-    glGetShaderiv(fragID, GL_COMPILE_STATUS, &compileResult);
-
-    if (!compileResult) {
-        fprintf(stderr, "Error in fragment shader\n");
-        //printLog(fragID);
-        // TODO: free the shader?
-        return NULL;
-    }
-
-    // Link the two into a program
-    progID = glCreateProgram();
-    glAttachShader(progID, vertID);
-    glAttachShader(progID, fragID);
-    glLinkProgram(progID);
-
-    // Check link status
-    glGetProgramiv(progID, GL_LINK_STATUS, &linkResult);
-
-    if (!linkResult) {
-        fprintf(stderr, "Error during linking\n");
-        //printLog(progID);
-        // TODO: free the shader?
-        return NULL;
-    }
-
-    GLProgram* program = new GLProgram();
-        
-    program->vertShaderID = vertID;
-    program->fragShaderID = fragID;
-    program->programID = progID;
+    // Compile and link the shaders
+    if (!(vertID = CompileShader(vertShader, GL_VERTEX_SHADER))) return NULL;
+    if (!(fragID = CompileShader(fragShader, GL_FRAGMENT_SHADER))) return NULL;
+    if (!(progID = LinkProgram(vertID, fragID))) return NULL;
+    
+    GLProgram* program = new GLProgram(progID, vertID, fragID);
 
     for (auto it = attributes.begin(); it != attributes.end(); ++it) {
         GLuint attribID = glGetAttribLocation(progID, (*it).c_str());
@@ -77,4 +97,10 @@ GLProgram* GLProgram::Compile(
 
 void GLProgram::Activate() {
     glUseProgram(programID);
+}
+
+GLProgram::~GLProgram() {
+    glDeleteShader(vertShaderID);
+    glDeleteShader(fragShaderID);
+    glDeleteProgram(programID);
 }

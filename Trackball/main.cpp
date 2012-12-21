@@ -58,31 +58,6 @@ int acquireFunctions() {
     return 1;
 }
 
-void printLog(GLuint object) {
-    char* log;
-    GLint logLength = 0;
-
-    if (glIsShader(object)) {
-        glGetShaderiv(object, GL_INFO_LOG_LENGTH, &logLength);
-    } else if (glIsProgram(object)) {
-        glGetProgramiv(object, GL_INFO_LOG_LENGTH, &logLength);
-    } else {
-        fprintf(stderr, "printLog: Not a shader or a program\n");
-    }
-
-    log = new char[logLength];
-
-    if (glIsShader(object)) {
-        glGetShaderInfoLog(object, logLength, NULL, log);
-    } else  if (glIsProgram(object)) {
-        glGetProgramInfoLog(object, logLength, NULL, log);
-    }
-
-    fprintf(stderr, "%s", log);
-
-    delete[] log;
-}
-
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
 
@@ -116,7 +91,7 @@ int main(int argc, char** argv) {
     std::vector<std::string> attribs;
     attribs.push_back("coord2d");
 
-    GLProgram* program = GLProgram::Compile(vertShader, fragShader, attribs);
+    GLProgram* program = GLProgram::Create(vertShader, fragShader, attribs);
     
     if (program == NULL) {
         glfwTerminate();

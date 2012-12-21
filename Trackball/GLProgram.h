@@ -11,18 +11,22 @@ class GLProgram
 {
 private:
     GLuint programID;
-
     GLuint vertShaderID;
     GLuint fragShaderID;
 
     std::map<std::string, GLuint> attribs;
 
-    GLProgram() {};
+    GLProgram(GLuint progID, GLuint vertID, GLuint fragID) :
+        programID(progID), vertShaderID(vertID), fragShaderID(fragID) {};
+    
+    static void PrintLog(GLuint object);
+    static GLuint CompileShader(const char* source, GLenum type);
+    static GLuint LinkProgram(GLuint vertID, GLuint fragID);
 
 public:
-    ~GLProgram() {};
+    ~GLProgram();
 
-    static GLProgram* Compile(
+    static GLProgram* Create(
         const char* vertShader,
         const char* fragShader,
         std::vector<std::string> attributes
