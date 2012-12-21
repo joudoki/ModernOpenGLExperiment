@@ -58,6 +58,11 @@ int acquireFunctions() {
     return 1;
 }
 
+void setupOpenGL() {
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+}
+
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
 
@@ -65,8 +70,7 @@ int main(int argc, char** argv) {
     if (!acquireFunctions()) return EXIT_FAILURE;
     
     printf("OpenGL %s\n", glGetString(GL_VERSION));
-
-    glEnable(GL_DEPTH_TEST);
+    setupOpenGL();
 
     /*
         Setup the program & shaders
@@ -98,11 +102,27 @@ int main(int argc, char** argv) {
     }
 
     program->Activate();
+
+    glm::mat4 matrix = glm::mat4(1.0f);
+        
+    glUniformMatrix4fv(
+        program->GetUniform("transform"),
+        1,          // Count
+        GL_FALSE,   // Do not transpose
+        glm::value_ptr(matrix)
+    );
+
+    GLint attrCoord = program->GetAttribute("coord");
+    GLint attrColor = program->GetAttribute("color");
     
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     /*
         Upload vertex data into VBOs
     */
-    GLuint vertCount = 9;
+
     GLfloat vertAttributeData[] = {
         0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
         0.5f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
@@ -117,33 +137,29 @@ int main(int argc, char** argv) {
         0.0f, 0.5f, 0.2f,    0.0f, 1.0f, 0.0f
     };
 
-    GLbyte vertIndices[] = {
+    GLuint vboVertAttributeData;
+    glGenBuffers(1, &vboVertAttributeData);
+    glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertAttributeData), vertAttributeData, GL_STATIC_DRAW);
+
+    GLubyte vertIndices[] = {
         0, 1, 2,
         3, 4, 5,
         6, 7, 8
     };
 
-    GLuint vboVertAttributeData;
-    glGenBuffers(1, &vboVertAttributeData);
-    glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertAttributeData), &vertAttributeData, GL_STATIC_DRAW);
+    GLuint iboVertIndices;
+    glGenBuffers(1, &iboVertIndices);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertIndices), vertIndices, GL_STATIC_DRAW);
 
     /*
         Setup the VAO
     */
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
-    GLint attrCoord = program->GetAttribute("coord");
-    GLint attrColor = program->GetAttribute("color");
-
+    // Set state of VAO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
     glEnableVertexAttribArray(attrCoord);
-    glEnableVertexAttribArray(attrColor);
-        
-    // Still in effect from above call
-    //glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
-
     glVertexAttribPointer(
         attrCoord,
         3,
@@ -152,7 +168,8 @@ int main(int argc, char** argv) {
         6 * sizeof(float),
         0
     );
-
+    
+    glEnableVertexAttribArray(attrColor);
     glVertexAttribPointer(
         attrColor,
         3,
@@ -162,25 +179,15 @@ int main(int argc, char** argv) {
         (void*)(3 * sizeof(float))
     );
 
-    /*
-        Setup uniform variables
-    */
-    glm::mat4 matrix = glm::mat4(1.0f);
-        
-    glUniformMatrix4fv(
-        program->GetUniform("transform"),
-        1,          // Count
-        GL_FALSE,   // Do not transpose
-        glm::value_ptr(matrix)
-    );
-
     while(true) {
-        glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Still in effect from above
-        // glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, vertCount);
+        //glBindVertexArray(vao);
+        //glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
+        //glDrawArrays(GL_TRIANGLES, 0, 9);
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, 0);
 
         glfwSwapBuffers();
         
@@ -191,9 +198,10 @@ int main(int argc, char** argv) {
 
     // Cleanup
     glDeleteBuffers(1, &vboVertAttributeData);
+    glDeleteBuffers(1, &iboVertIndices);
     glDeleteVertexArrays(1, &vao);
+    delete program;
     
     glfwTerminate();
-
     return EXIT_SUCCESS;
 }
