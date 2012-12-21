@@ -90,19 +90,19 @@ int main(int argc, char** argv) {
     program->Activate();
     
     GLfloat vertCoords[] = {
-        0.0f, 0.0f,
+        0.1f, 0.1f,
         1.0f, 0.0f,
         0.0f, 1.0f,
 
-        0.0f, 0.0f,
+        0.1f, -0.1f,
         1.0f, 0.0f,
         0.0f, -1.0f,
 
-        0.0f, 0.0f,
+        -0.1f, -0.1f,
         -1.0f, 0.0f,
         0.0f, -1.0f,
 
-        0.0f, 0.0f,
+        -0.1f, 0.1f,
         -1.0f, 0.0f,
         0.0f, 1.0f
     };
