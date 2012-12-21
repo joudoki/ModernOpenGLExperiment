@@ -66,6 +66,8 @@ int main(int argc, char** argv) {
     
     printf("OpenGL %s\n", glGetString(GL_VERSION));
 
+    glEnable(GL_DEPTH_TEST);
+
     /*
         Setup the program & shaders
     */
@@ -106,13 +108,19 @@ int main(int argc, char** argv) {
         0.5f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
         
-        0.0f, 0.0f, 0.2f,    0.0f, 0.0f, 1.0f,
-        0.8f, 1.0f, 0.2f,    0.0f, 0.0f, 1.0f,
-        1.0f, 0.8f, 0.2f,    0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 0.5f,    0.0f, 0.0f, 1.0f,
+        0.8f, 1.0f, 0.5f,    0.0f, 0.0f, 1.0f,
+        1.0f, 0.8f, 0.5f,    0.0f, 0.0f, 1.0f,
 
-        0.0f, 0.0f, 0.5f,    0.0f, 1.0f, 0.0f,
-        1.0f, 0.0f, 0.5f,    0.0f, 1.0f, 0.0f,
-        0.0f, 0.5f, 0.5f,    0.0f, 1.0f, 0.0f
+        0.0f, 0.0f, 0.2f,    0.0f, 1.0f, 0.0f,
+        1.0f, 0.0f, 0.2f,    0.0f, 1.0f, 0.0f,
+        0.0f, 0.5f, 0.2f,    0.0f, 1.0f, 0.0f
+    };
+
+    GLbyte vertIndices[] = {
+        0, 1, 2,
+        3, 4, 5,
+        6, 7, 8
     };
 
     GLuint vboVertAttributeData;
@@ -168,7 +176,7 @@ int main(int argc, char** argv) {
 
     while(true) {
         glClearColor(0.0, 0.0, 0.0, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Still in effect from above
         // glBindVertexArray(vao);
