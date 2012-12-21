@@ -72,6 +72,8 @@ int main(int argc, char** argv) {
     printf("OpenGL %s\n", glGetString(GL_VERSION));
     setupOpenGL();
 
+    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+
     /*
         Setup the program & shaders
     */
@@ -103,6 +105,8 @@ int main(int argc, char** argv) {
 
     program->Activate();
 
+    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+
     glm::mat4 matrix = glm::mat4(1.0f);
         
     glUniformMatrix4fv(
@@ -118,6 +122,8 @@ int main(int argc, char** argv) {
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
+
+    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
 
     /*
         Upload vertex data into VBOs
@@ -142,6 +148,8 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertAttributeData), vertAttributeData, GL_STATIC_DRAW);
 
+    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+
     GLubyte vertIndices[] = {
         0, 1, 2,
         3, 4, 5,
@@ -153,12 +161,13 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertIndices), vertIndices, GL_STATIC_DRAW);
 
+    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+
     /*
         Setup the VAO
     */
 
     // Set state of VAO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
     glEnableVertexAttribArray(attrCoord);
     glVertexAttribPointer(
         attrCoord,
@@ -169,6 +178,8 @@ int main(int argc, char** argv) {
         0
     );
     
+    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+    
     glEnableVertexAttribArray(attrColor);
     glVertexAttribPointer(
         attrColor,
@@ -178,6 +189,8 @@ int main(int argc, char** argv) {
         6 * sizeof(float),
         (void*)(3 * sizeof(float))
     );
+    
+    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
 
     while(true) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -188,6 +201,7 @@ int main(int argc, char** argv) {
         //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
         //glDrawArrays(GL_TRIANGLES, 0, 9);
         glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, 0);
+        printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
 
         glfwSwapBuffers();
         
