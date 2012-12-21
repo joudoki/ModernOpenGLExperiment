@@ -112,11 +112,9 @@ int main(int argc, char** argv) {
     /*
         Setup the VAO
     */
-    /*
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    */
 
     GLint attrCoord = program->GetAttribute("coord");
     //GLint attrColor = program->GetAttribute("color");
@@ -175,8 +173,8 @@ int main(int argc, char** argv) {
     }
 
     // Cleanup
-    //glDeleteBuffers(1, &vboVertAttributeData);
-    //glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vboVertAttributeData);
+    glDeleteVertexArrays(1, &vao);
     
     glfwTerminate();
 
