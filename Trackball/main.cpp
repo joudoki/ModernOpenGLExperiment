@@ -101,15 +101,13 @@ int main(int argc, char** argv) {
     GLfloat vertAttributeData[] = {
         0.0f, 0.0f,//    1.0f, 0.0f, 0.0f,
         1.0f, 0.0f,//    0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f,//    0.0f, 0.0f, 0.0f
+        0.0f, 1.0f//    0.0f, 0.0f, 0.0f
     };
 
-    /*
     GLuint vboVertAttributeData;
     glGenBuffers(1, &vboVertAttributeData);
     glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vboVertAttributeData), &vboVertAttributeData, GL_STATIC_DRAW);
-    */
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertAttributeData), &vertAttributeData, GL_STATIC_DRAW);
 
     /*
         Setup the VAO
@@ -127,7 +125,7 @@ int main(int argc, char** argv) {
     //glEnableVertexAttribArray(attrColor);
         
     // Still in effect from above call
-    // glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
+    //glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
 
     glVertexAttribPointer(
         attrCoord,
@@ -135,7 +133,7 @@ int main(int argc, char** argv) {
         GL_FLOAT,
         GL_FALSE,
         0,
-        vertAttributeData
+        0
     );
 
     /*
