@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
 
-    GLuint vertIndices[] = {
+    GLubyte vertIndices[] = {
         0, 1, 2,
         3, 4, 5,
         6, 7, 8
@@ -197,12 +197,8 @@ int main(int argc, char** argv) {
         // Still in effect from above
         //glBindVertexArray(vao);
 
-        //glDrawArrays(GL_TRIANGLES, 0, 9);
-
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
-
-        //printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_BYTE, 0);
 
         glfwSwapBuffers();
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
