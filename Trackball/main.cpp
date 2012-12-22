@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
 
-    GLubyte vertIndices[] = {
+    GLuint vertIndices[] = {
         0, 1, 2,
         3, 4, 5,
         6, 7, 8
@@ -185,21 +185,23 @@ int main(int argc, char** argv) {
     */
     glEnableVertexAttribArray(attrCoord);
     glBindBuffer(GL_ARRAY_BUFFER, vboVertCoords);
-    glVertexAttribPointer(attrCoord, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+    glVertexAttribPointer(attrCoord, 3, GL_FLOAT, GL_FALSE, 0, 0);
     
     glEnableVertexAttribArray(attrColor);
     glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
-    glVertexAttribPointer(attrColor, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+    glVertexAttribPointer(attrColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Still in effect from above
         //glBindVertexArray(vao);
-        //glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
-        glDrawArrays(GL_TRIANGLES, 0, 9);
-        //glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, 0);
+
+        //glDrawArrays(GL_TRIANGLES, 0, 9);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
         //printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
 
         glfwSwapBuffers();
