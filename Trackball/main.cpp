@@ -81,22 +81,26 @@ int main(int argc, char** argv) {
         Setup the program & shaders
     */
     const char* vertShader =
-        "#version 120\n"
+        "#version 330 core\n"
         "uniform mat4 transform;\n"
-        "attribute vec3 coord;\n"
-        "attribute vec3 color;\n"
+        "in vec3 vCoord;\n"
+        "in vec3 vColor;\n"
+        "out vec3 fColor;\n"
         "void main(void) {\n"
-        "  gl_Position = transform * vec4(coord, 1.0);\n"
-        "  gl_FrontColor = vec4(color, 1.0);\n"
+        "  gl_Position = transform * vec4(vCoord, 1.0);\n"
+        "  fColor = vColor;\n"
         "}\n";
 
     const char* fragShader =
-        "#version 120\n"
+        "#version 330 core\n"
+        "in vec3 fColor;\n"
+        "out vec3 color;\n"
         "void main(void) {\n"
+        "  color = fColor;"
         //"  gl_FragColor[2] = gl_FragCoord.x/800.0;\n"
         //"  gl_FragColor[1] = gl_FragCoord.y/600.0;\n"
         //"  gl_FragColor[0] = 1.0;\n"
-        "  gl_FragColor = gl_Color;\n"
+        //"  gl_FragColor = gl_Color;\n"
         "}\n";
 
     GLProgram* program = GLProgram::Create(vertShader, fragShader);
@@ -119,8 +123,8 @@ int main(int argc, char** argv) {
         glm::value_ptr(matrix)
     );
 
-    GLint attrCoord = program->GetAttribute("coord");
-    GLint attrColor = program->GetAttribute("color");
+    GLint attrCoord = program->GetAttribute("vCoord");
+    GLint attrColor = program->GetAttribute("vColor");
     
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -195,23 +199,19 @@ int main(int argc, char** argv) {
     
     printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
 
-    while(true) {
+    do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Still in effect from above
         //glBindVertexArray(vao);
         //glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
         //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
-        //glDrawArrays(GL_TRIANGLES, 0, 9);
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, 0);
-        printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+        glDrawArrays(GL_TRIANGLES, 0, 9);
+        //glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, 0);
+        //printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
 
         glfwSwapBuffers();
-        
-        // Check for stopping conditions
-        if (glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
-            break;
-    }
+    } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
     glDeleteBuffers(1, &vboVertAttributeData);

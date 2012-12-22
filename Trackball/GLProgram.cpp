@@ -34,7 +34,7 @@ GLuint GLProgram::CompileShader(const char* source, GLenum type) {
     glGetShaderiv(id, GL_COMPILE_STATUS, &compileResult);
 
     if (!compileResult) {
-        fprintf(stderr, "Error in vertex shader\n");
+        fprintf(stderr, "Error in shader of type %d:\n", type);
 
         PrintLog(id);
         glDeleteShader(id);
