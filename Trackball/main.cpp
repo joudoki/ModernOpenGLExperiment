@@ -17,9 +17,7 @@
 
 #include "GLProgram.h"
 
-int acquireContext() {
-    int width = 800, height = 600;
-
+int acquireContext(int width, int height) {
     // Context Creation
     if (!glfwInit()) {
         fprintf(stderr, "Unable to initialize GLFW!\n");
@@ -63,13 +61,15 @@ int acquireFunctions() {
 
 void setupOpenGL() {
     glEnable(GL_DEPTH_TEST);
+    //glDepthRange(0.0, 1.0);
     glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
-
-    if (!acquireContext()) return EXIT_FAILURE;
+    
+    int width = 800, height = 600;
+    if (!acquireContext(width, height)) return EXIT_FAILURE;
     if (!acquireFunctions()) return EXIT_FAILURE;
     
     printf("OpenGL %s\n", glGetString(GL_VERSION));
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
         "uniform mat4 transform;\n"
         "in vec3 vCoord;\n"
         "in vec3 vColor;\n"
-        "out vec3 fColor;\n"
+        "flat out vec3 fColor;\n"
         "void main(void) {\n"
         "  gl_Position = transform * vec4(vCoord, 1.0);\n"
         "  fColor = vColor;\n"
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 
     const char* fragShader =
         "#version 330 core\n"
-        "in vec3 fColor;\n"
+        "flat in vec3 fColor;\n"
         "out vec3 color;\n"
         "void main(void) {\n"
         "  color = fColor;"
@@ -112,15 +112,6 @@ int main(int argc, char** argv) {
 
     program->Activate();
 
-    glm::mat4 matrix = glm::mat4(1.0f);
-        
-    glUniformMatrix4fv(
-        program->GetUniform("transform"),
-        1,          // Count
-        GL_FALSE,   // Do not transpose
-        glm::value_ptr(matrix)
-    );
-
     GLint attrCoord = program->GetAttribute("vCoord");
     GLint attrColor = program->GetAttribute("vColor");
     
@@ -132,17 +123,14 @@ int main(int argc, char** argv) {
         Upload vertex data into VBOs
     */
     GLfloat vertCoords[] = {
-        0.0f, 0.0f, 0.0f,
-        0.5f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        
-        0.0f, 0.0f, 0.5f,
-        0.8f, 1.0f, 0.5f,
-        1.0f, 0.8f, 0.5f,
-
-        0.0f, 0.0f, 0.2f,
-        1.0f, 0.0f, 0.2f,
-        0.0f, 0.5f, 0.2f,
+        -0.25f, -0.25f, -0.25f,
+        -0.25f, -0.25f,  0.25f,
+        -0.25f,  0.25f, -0.25f,
+        -0.25f,  0.25f,  0.25f,
+         0.25f, -0.25f, -0.25f,
+         0.25f, -0.25f,  0.25f,
+         0.25f,  0.25f, -0.25f,
+         0.25f,  0.25f,  0.25f
     };
 
     GLuint vboVertCoords;
@@ -150,19 +138,12 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ARRAY_BUFFER, vboVertCoords);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
 
-    GLfloat vertColors[] = {
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-    };
+    GLfloat vertColors[8*3] = {};
+    for (size_t i=0; i<8; ++i) {
+        float t = ((5*i) % 16) / 16.0f;
+        vertColors[3*i] = t;
+        vertColors[3*i+1] = 1-t;
+    }
 
     GLuint vboVertColors;
     glGenBuffers(1, &vboVertColors);
@@ -170,9 +151,12 @@ int main(int argc, char** argv) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
 
     GLubyte vertIndices[] = {
-        0, 1, 2,
-        3, 4, 5,
-        6, 7, 8
+        1, 3, 7,    1, 7, 5,
+        7, 4, 5,    7, 6, 4,
+        3, 2, 7,    2, 6, 7,
+        2, 3, 1,    2, 1, 0,
+        6, 2, 0,    6, 0, 4,
+        0, 1, 5,    0, 5, 4
     };
 
     GLuint iboVertIndices;
@@ -192,13 +176,27 @@ int main(int argc, char** argv) {
     glVertexAttribPointer(attrColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     do {
+        //glm::mat4 proj = glm::perspectiveFov(glm::radians(70.0f), (float) width, (float) height, 1.0f, 128.0f);
+        //glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        float time = glfwGetTime();
+        float pitch = -15.0f, yaw = 25.0f * time;
+        glm::mat4 matrix = glm::rotate(glm::rotate(glm::mat4(1.0f), pitch, glm::vec3(1.0f, 0.0f, 0.0f)), yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        glUniformMatrix4fv(
+            program->GetUniform("transform"),
+            1,          // Count
+            GL_FALSE,   // Do not transpose
+            glm::value_ptr(matrix)
+        );
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Still in effect from above
         //glBindVertexArray(vao);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_BYTE, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
 
         glfwSwapBuffers();
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
