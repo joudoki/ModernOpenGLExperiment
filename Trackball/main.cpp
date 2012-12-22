@@ -112,8 +112,6 @@ int main(int argc, char** argv) {
 
     program->Activate();
 
-    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
-
     glm::mat4 matrix = glm::mat4(1.0f);
         
     glUniformMatrix4fv(
@@ -130,32 +128,46 @@ int main(int argc, char** argv) {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
-
     /*
         Upload vertex data into VBOs
     */
-
-    GLfloat vertAttributeData[] = {
-        0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-        0.5f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+    GLfloat vertCoords[] = {
+        0.0f, 0.0f, 0.0f,
+        0.5f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
         
-        0.0f, 0.0f, 0.5f,    0.0f, 0.0f, 1.0f,
-        0.8f, 1.0f, 0.5f,    0.0f, 0.0f, 1.0f,
-        1.0f, 0.8f, 0.5f,    0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 0.5f,
+        0.8f, 1.0f, 0.5f,
+        1.0f, 0.8f, 0.5f,
 
-        0.0f, 0.0f, 0.2f,    0.0f, 1.0f, 0.0f,
-        1.0f, 0.0f, 0.2f,    0.0f, 1.0f, 0.0f,
-        0.0f, 0.5f, 0.2f,    0.0f, 1.0f, 0.0f
+        0.0f, 0.0f, 0.2f,
+        1.0f, 0.0f, 0.2f,
+        0.0f, 0.5f, 0.2f,
     };
 
-    GLuint vboVertAttributeData;
-    glGenBuffers(1, &vboVertAttributeData);
-    glBindBuffer(GL_ARRAY_BUFFER, vboVertAttributeData);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertAttributeData), vertAttributeData, GL_STATIC_DRAW);
+    GLuint vboVertCoords;
+    glGenBuffers(1, &vboVertCoords);
+    glBindBuffer(GL_ARRAY_BUFFER, vboVertCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
 
-    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+    GLfloat vertColors[] = {
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+    };
+
+    GLuint vboVertColors;
+    glGenBuffers(1, &vboVertColors);
+    glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
 
     GLubyte vertIndices[] = {
         0, 1, 2,
@@ -168,36 +180,16 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertIndices), vertIndices, GL_STATIC_DRAW);
 
-    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
-
     /*
         Setup the VAO
     */
-
-    // Set state of VAO
     glEnableVertexAttribArray(attrCoord);
-    glVertexAttribPointer(
-        attrCoord,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        0
-    );
-    
-    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+    glBindBuffer(GL_ARRAY_BUFFER, vboVertCoords);
+    glVertexAttribPointer(attrCoord, 3, GL_FLOAT, GL_FALSE, 0, 0 );
     
     glEnableVertexAttribArray(attrColor);
-    glVertexAttribPointer(
-        attrColor,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)(3 * sizeof(float))
-    );
-    
-    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
+    glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
+    glVertexAttribPointer(attrColor, 3, GL_FLOAT, GL_FALSE, 0, 0 );
 
     do {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -214,7 +206,8 @@ int main(int argc, char** argv) {
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
-    glDeleteBuffers(1, &vboVertAttributeData);
+    glDeleteBuffers(1, &vboVertCoords);
+    glDeleteBuffers(1, &vboVertColors);
     glDeleteBuffers(1, &iboVertIndices);
     glDeleteVertexArrays(1, &vao);
     delete program;
