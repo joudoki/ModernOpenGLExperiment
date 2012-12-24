@@ -61,8 +61,12 @@ int acquireFunctions() {
 
 void setupOpenGL() {
     glEnable(GL_DEPTH_TEST);
-    //glDepthRange(0.0, 1.0);
+    //glDepthRange(1.0, 128.0);
+    glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
     glClearColor(0.0, 0.0, 0.0, 1.0);
+    glViewport(0, 0, 800, 600);
+	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 }
 
 int main(int argc, char** argv) {
@@ -123,14 +127,14 @@ int main(int argc, char** argv) {
         Upload vertex data into VBOs
     */
     GLfloat vertCoords[] = {
-        -0.25f, -0.25f, -0.25f,
-        -0.25f, -0.25f,  0.25f,
-        -0.25f,  0.25f, -0.25f,
-        -0.25f,  0.25f,  0.25f,
-         0.25f, -0.25f, -0.25f,
-         0.25f, -0.25f,  0.25f,
-         0.25f,  0.25f, -0.25f,
-         0.25f,  0.25f,  0.25f
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f
     };
 
     GLuint vboVertCoords;
@@ -138,12 +142,24 @@ int main(int argc, char** argv) {
     glBindBuffer(GL_ARRAY_BUFFER, vboVertCoords);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
 
-    GLfloat vertColors[8*3] = {};
+    GLfloat vertColors[] = {
+        0.5f, 0.5f, 0.5f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 1.0f
+    };
+
+    /*
     for (size_t i=0; i<8; ++i) {
-        float t = ((5*i) % 16) / 16.0f;
+        float t = ((3*i) % 16) / 16.0f;
         vertColors[3*i] = t;
         vertColors[3*i+1] = 1-t;
     }
+    */
 
     GLuint vboVertColors;
     glGenBuffers(1, &vboVertColors);
@@ -151,12 +167,23 @@ int main(int argc, char** argv) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
 
     GLubyte vertIndices[] = {
-        1, 3, 7,    1, 7, 5,
-        7, 4, 5,    7, 6, 4,
-        3, 2, 7,    2, 6, 7,
-        2, 3, 1,    2, 1, 0,
-        6, 2, 0,    6, 0, 4,
-        0, 1, 5,    0, 5, 4
+        // X
+        7, 4, 5,
+        6, 4, 7,
+        2, 1, 0,
+        3, 1, 2,
+
+        // Y
+        2, 6, 3,
+        3, 6, 7,
+        4, 0, 1,
+        5, 4, 1,
+
+        // Z
+        1, 3, 5,
+        5, 3, 7,
+        4, 6, 0,
+        0, 6, 2
     };
 
     GLuint iboVertIndices;
@@ -176,12 +203,18 @@ int main(int argc, char** argv) {
     glVertexAttribPointer(attrColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     do {
-        //glm::mat4 proj = glm::perspectiveFov(glm::radians(70.0f), (float) width, (float) height, 1.0f, 128.0f);
-        //glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-        float time = glfwGetTime();
+        float time = (float) glfwGetTime();
         float pitch = -15.0f, yaw = 25.0f * time;
-        glm::mat4 matrix = glm::rotate(glm::rotate(glm::mat4(1.0f), pitch, glm::vec3(1.0f, 0.0f, 0.0f)), yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        glm::mat4 model     = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
+
+        glm::mat4 viewPitch = glm::rotate(glm::mat4(1.0f),      pitch,  glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 viewYaw   = glm::rotate(glm::mat4(1.0f),      yaw,    glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 viewPos   = glm::translate(glm::mat4(1.0f),           glm::vec3(10.0f, 0.0f, 0.0f));
+
+        glm::mat4 project   = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
+
+        glm::mat4 matrix = model * viewPitch * viewYaw; //viewYaw * viewPitch; //project * viewYaw * viewPitch * model;
 
         glUniformMatrix4fv(
             program->GetUniform("transform"),
