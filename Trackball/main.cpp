@@ -12,6 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -66,7 +68,13 @@ void setupOpenGL() {
     //glCullFace(GL_BACK);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glViewport(0, 0, 800, 600);
-	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+    glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+}
+
+std::string readFile(const char* fileName) {
+    std::ifstream in(fileName);
+    if (!in) throw(errno);
+    return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
 }
 
 int main(int argc, char** argv) {
@@ -84,30 +92,10 @@ int main(int argc, char** argv) {
     /*
         Setup the program & shaders
     */
-    const char* vertShader =
-        "#version 330 core\n"
-        "uniform mat4 transform;\n"
-        "in vec3 vCoord;\n"
-        "in vec3 vColor;\n"
-        "flat out vec3 fColor;\n"
-        "void main(void) {\n"
-        "  gl_Position = transform * vec4(vCoord, 1.0);\n"
-        "  fColor = vColor;\n"
-        "}\n";
-
-    const char* fragShader =
-        "#version 330 core\n"
-        "flat in vec3 fColor;\n"
-        "out vec3 color;\n"
-        "void main(void) {\n"
-        "  color = fColor;"
-        //"  gl_FragColor[2] = gl_FragCoord.x/800.0;\n"
-        //"  gl_FragColor[1] = gl_FragCoord.y/600.0;\n"
-        //"  gl_FragColor[0] = 1.0;\n"
-        //"  gl_FragColor = gl_Color;\n"
-        "}\n";
-
-    GLProgram* program = GLProgram::Create(vertShader, fragShader);
+    GLProgram* program = GLProgram::Create(
+        readFile("glsl/one.v.glsl").c_str(), 
+        readFile("glsl/one.f.glsl").c_str()
+    );
 
     if (program == NULL) {
         glfwTerminate();
@@ -204,17 +192,14 @@ int main(int argc, char** argv) {
 
     do {
         float time = (float) glfwGetTime();
-        float pitch = -15.0f, yaw = 25.0f * time;
 
-        glm::mat4 model     = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
+        float x = 1.5f * glm::cos(time), z = 1.5f * glm::sin(time);
 
-        glm::mat4 viewPitch = glm::rotate(glm::mat4(1.0f),      pitch,  glm::vec3(1.0f, 0.0f, 0.0f));
-        glm::mat4 viewYaw   = glm::rotate(glm::mat4(1.0f),      yaw,    glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 viewPos   = glm::translate(glm::mat4(1.0f),           glm::vec3(10.0f, 0.0f, 0.0f));
+        glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
+        glm::mat4 view = glm::lookAt(glm::vec3(x, 1.5f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 project = glm::perspectiveFov(45.0f, (float) width, (float) height, 1.0f, 16.0f);
 
-        glm::mat4 project   = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
-
-        glm::mat4 matrix = model * viewPitch * viewYaw; //viewYaw * viewPitch; //project * viewYaw * viewPitch * model;
+        glm::mat4 matrix = project * view * model;
 
         glUniformMatrix4fv(
             program->GetUniform("transform"),
