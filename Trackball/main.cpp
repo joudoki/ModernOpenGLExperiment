@@ -62,12 +62,17 @@ int acquireFunctions() {
 }
 
 void setupOpenGL() {
-    glEnable(GL_DEPTH_TEST);
-    //glDepthRange(1.0, 128.0);
-    glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
     glClearColor(0.0, 0.0, 0.0, 1.0);
+
+    // Enable 3D ops
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    // Setup windowing transform
     glViewport(0, 0, 800, 600);
+    //glDepthRange(1.0f, 128.0f);
+    
+    // For flat shading, take the value of the first vertex in the primitive
     glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 }
 
@@ -141,44 +146,26 @@ int main(int argc, char** argv) {
         1.0f, 1.0f, 1.0f
     };
 
-    /*
-    for (size_t i=0; i<8; ++i) {
-        float t = ((3*i) % 16) / 16.0f;
-        vertColors[3*i] = t;
-        vertColors[3*i+1] = 1-t;
-    }
-    */
-
     GLuint vboVertColors;
     glGenBuffers(1, &vboVertColors);
     glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
 
+    // [[(1,2,3),(2,1,0),(3,7,5),(5,1,3),(7,6,4),(5,7,4),(6,2,0),(4,6,0),(2,6,3),(6,7,3),(1,4,0),(4,1,5)]]
     GLubyte vertIndices[] = {
-        // X
-        7, 4, 5,
-        6, 4, 7,
-        2, 1, 0,
-        3, 1, 2,
-
-        // Y
-        2, 6, 3,
-        3, 6, 7,
-        4, 0, 1,
-        5, 4, 1,
-
-        // Z
-        1, 3, 5,
-        5, 3, 7,
-        4, 6, 0,
-        0, 6, 2
+        1,2,3, 2,1,0,
+        3,7,5, 5,1,3,
+        7,6,4, 5,7,4,
+        6,2,0, 4,6,0,
+        2,6,3, 6,7,3,
+        1,4,0, 4,1,5
     };
 
     GLuint iboVertIndices;
     glGenBuffers(1, &iboVertIndices);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertIndices), vertIndices, GL_STATIC_DRAW);
-
+        
     /*
         Setup the VAO
     */
