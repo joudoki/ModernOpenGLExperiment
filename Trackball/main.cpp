@@ -122,6 +122,66 @@ GLuint createVAO(GLAttribute_t* attrs, GLsizei attrCount) {
     return vao;
 }
 
+typedef struct {
+    GLfloat coord[3];
+    GLfloat color[3];
+} Vertex_t;
+
+class Cube {
+private:
+    GLuint vao;
+    GLuint vbo;
+    GLuint ibo;
+
+public:
+    Cube() : vao(0), vbo(0), ibo(0) { }
+    ~Cube() { }
+
+    void Upload(GLuint attrCoord, GLuint attrColor) {
+        Vertex_t data[] = {
+            {{-1.0f, -1.0f, -1.0f}, {0.5f, 0.5f, 0.5f}},
+            {{-1.0f, -1.0f,  1.0f}, {0.0f, 0.0f, 1.0f}},
+            {{-1.0f,  1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
+            {{-1.0f,  1.0f,  1.0f}, {0.0f, 1.0f, 1.0f}},
+            {{ 1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}},
+            {{ 1.0f, -1.0f,  1.0f}, {1.0f, 0.0f, 1.0f}},
+            {{ 1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 0.0f}},
+            {{ 1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}}
+        };
+
+        GLubyte indices[] = {
+            2,3,1, 0,2,1,
+            7,5,3, 5,1,3,
+            6,4,7, 4,5,7,
+            2,0,6, 0,4,6,
+            6,3,2, 3,6,7,
+            4,0,1, 1,5,4
+        };
+
+        vbo = createVBO(data,       sizeof(data),       GL_ARRAY_BUFFER,         GL_STATIC_DRAW);
+        ibo = createVBO(indices,    sizeof(indices),    GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+        
+        GLAttribute_t vaoAttrs[] = {
+            {attrCoord, vbo, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0},
+            {attrColor, vbo, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+        };
+
+        vao = createVAO(vaoAttrs, 2);
+    }
+
+    void Cleanup() {
+        glDeleteBuffers(1, &vbo);
+        glDeleteBuffers(1, &ibo);
+        glDeleteVertexArrays(1, &vao);
+    }
+
+    void Render() {
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
+    }
+};
+
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
     
@@ -149,42 +209,12 @@ int main(int argc, char** argv) {
 
     GLint attrCoord = program->GetAttribute("vCoord");
     GLint attrColor = program->GetAttribute("vColor");
-
-    /*
-        Upload vertex data into VBOs
-    */
-    GLfloat verts[] = {
-        -1.0f, -1.0f, -1.0f,  0.5f, 0.5f, 0.5f,
-        -1.0f, -1.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-        -1.0f,  1.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-        -1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 1.0f,
-         1.0f, -1.0f, -1.0f,  1.0f, 0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f,  1.0f, 0.0f, 1.0f,
-         1.0f,  1.0f, -1.0f,  1.0f, 1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f,  1.0f, 1.0f, 1.0f
-    };
-
-    GLubyte vertIndices[] = {
-        2,3,1, 0,2,1,
-        7,5,3, 5,1,3,
-        6,4,7, 4,5,7,
-        2,0,6, 0,4,6,
-        6,3,2, 3,6,7,
-        4,0,1, 1,5,4
-    };
-
-    GLuint vboVerts = createVBO(verts, sizeof(verts), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-    GLuint iboVertIndices = createVBO(vertIndices, sizeof(vertIndices), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
     
     /*
-        Setup the VAO
+        Setup objects
     */
-    GLAttribute_t vaoAttrs[] = {
-        {attrCoord, vboVerts, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0},
-        {attrColor, vboVerts, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
-    };
-
-    GLuint vao = createVAO(vaoAttrs, 2);
+    Cube* cube = new Cube();
+    cube->Upload(attrCoord, attrColor);
 
     do {
         float time = (float) glfwGetTime();
@@ -205,20 +235,16 @@ int main(int argc, char** argv) {
         );
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Still in effect from above
-        //glBindVertexArray(vao);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
+        cube->Render();
 
         glfwSwapBuffers();
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
-    // Cleanup
-    glDeleteBuffers(1, &vboVerts);
-    glDeleteBuffers(1, &iboVertIndices);
-    glDeleteVertexArrays(1, &vao);
+    /*
+        Cleanup
+    */
+    cube->Cleanup();
+    delete cube;
     delete program;
     
     glfwTerminate();
