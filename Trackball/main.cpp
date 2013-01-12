@@ -19,6 +19,8 @@
 
 #include "GLProgram.h"
 
+#define BUFFER_OFFSET(i) ((char*) NULL + (i))
+
 int acquireContext(int width, int height) {
     // Context Creation
     if (!glfwInit()) {
@@ -130,8 +132,6 @@ int main(int argc, char** argv) {
     printf("OpenGL %s\n", glGetString(GL_VERSION));
     setupOpenGL();
 
-    printf("%d - %s:%d\n", glGetError(), __FILE__, __LINE__);
-
     /*
         Setup the program & shaders
     */
@@ -153,26 +153,15 @@ int main(int argc, char** argv) {
     /*
         Upload vertex data into VBOs
     */
-    GLfloat vertCoords[] = {
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f
-    };
-
-    GLfloat vertColors[] = {
-        0.5f, 0.5f, 0.5f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 0.0f,
-        1.0f, 1.0f, 1.0f
+    GLfloat verts[] = {
+        -1.0f, -1.0f, -1.0f,  0.5f, 0.5f, 0.5f,
+        -1.0f, -1.0f,  1.0f,  0.0f, 0.0f, 1.0f,
+        -1.0f,  1.0f, -1.0f,  0.0f, 1.0f, 0.0f,
+        -1.0f,  1.0f,  1.0f,  0.0f, 1.0f, 1.0f,
+         1.0f, -1.0f, -1.0f,  1.0f, 0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f,  1.0f, 0.0f, 1.0f,
+         1.0f,  1.0f, -1.0f,  1.0f, 1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f,  1.0f, 1.0f, 1.0f
     };
 
     GLubyte vertIndices[] = {
@@ -184,16 +173,15 @@ int main(int argc, char** argv) {
         4,0,1, 1,5,4
     };
 
-    GLuint vboVertCoords = createVBO(vertCoords, sizeof(vertCoords), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-    GLuint vboVertColors = createVBO(vertColors, sizeof(vertColors), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    GLuint vboVerts = createVBO(verts, sizeof(verts), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
     GLuint iboVertIndices = createVBO(vertIndices, sizeof(vertIndices), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
     
     /*
         Setup the VAO
     */
     GLAttribute_t vaoAttrs[] = {
-        {attrCoord, vboVertCoords, 3, GL_FLOAT, GL_FALSE, 0, 0},
-        {attrColor, vboVertColors, 3, GL_FLOAT, GL_FALSE, 0, 0}
+        {attrCoord, vboVerts, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0},
+        {attrColor, vboVerts, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
     };
 
     GLuint vao = createVAO(vaoAttrs, 2);
@@ -228,8 +216,7 @@ int main(int argc, char** argv) {
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
-    glDeleteBuffers(1, &vboVertCoords);
-    glDeleteBuffers(1, &vboVertColors);
+    glDeleteBuffers(1, &vboVerts);
     glDeleteBuffers(1, &iboVertIndices);
     glDeleteVertexArrays(1, &vao);
     delete program;
