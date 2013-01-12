@@ -82,6 +82,20 @@ std::string readFile(const char* fileName) {
     return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
 }
 
+GLuint createVBO(void* data, GLuint size, GLenum type, GLenum hint) {
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+
+    glBindBuffer(type, vbo);
+    glBufferData(type, size, data, hint);
+
+    return vbo;
+}
+
+typedef struct {
+    GLuint 
+} cube_t;
+
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
     
@@ -130,11 +144,6 @@ int main(int argc, char** argv) {
          1.0f,  1.0f,  1.0f
     };
 
-    GLuint vboVertCoords;
-    glGenBuffers(1, &vboVertCoords);
-    glBindBuffer(GL_ARRAY_BUFFER, vboVertCoords);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertCoords), vertCoords, GL_STATIC_DRAW);
-
     GLfloat vertColors[] = {
         0.5f, 0.5f, 0.5f,
         0.0f, 0.0f, 1.0f,
@@ -146,12 +155,6 @@ int main(int argc, char** argv) {
         1.0f, 1.0f, 1.0f
     };
 
-    GLuint vboVertColors;
-    glGenBuffers(1, &vboVertColors);
-    glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertColors), vertColors, GL_STATIC_DRAW);
-
-    // [[(1,2,3),(2,1,0),(3,7,5),(5,1,3),(7,6,4),(5,7,4),(6,2,0),(4,6,0),(2,6,3),(6,7,3),(1,4,0),(4,1,5)]]
     GLubyte vertIndices[] = {
         1,2,3, 2,1,0,
         3,7,5, 5,1,3,
@@ -161,11 +164,10 @@ int main(int argc, char** argv) {
         1,4,0, 4,1,5
     };
 
-    GLuint iboVertIndices;
-    glGenBuffers(1, &iboVertIndices);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboVertIndices);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertIndices), vertIndices, GL_STATIC_DRAW);
-        
+    GLuint vboVertCoords = createVBO(vertCoords, sizeof(vertCoords), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    GLuint vboVertColors = createVBO(vertColors, sizeof(vertColors), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    GLuint iboVertIndices = createVBO(vertIndices, sizeof(vertIndices), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+    
     /*
         Setup the VAO
     */
