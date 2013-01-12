@@ -1,4 +1,5 @@
 module Derp where
+import Data.List
 
 toTernary :: Int -> Int -> [Int]
 toTernary p 0 = take p $ repeat 0
@@ -67,8 +68,13 @@ isAdjacent tris (a,b) = a' == b'
 isGoodConfig :: [Tri] -> [Adj] -> Bool
 isGoodConfig tris adjs = not $ any (isAdjacent tris) adjs
 
+countColors :: [Tri] -> Int
+countColors tris = length $ nub $ map (\(a, b, c) -> a) tris
+
 main = do {
     let n = length cubeVerts in
-        take 1 $ filter (\x -> isGoodConfig x triAdj) $ map (\x -> (rotate cubeVerts (toTernary n x))) [0..3^n]
+        maximumBy (\a -> \b -> compare (countColors a) (countColors b)) $ 
+            filter (\x -> isGoodConfig x triAdj) $ 
+            map (\x -> (rotate cubeVerts (toTernary n x))) [0..3^n]
     --putStrLn $ show $ isGoodConfig cubeVerts triAdj
 }

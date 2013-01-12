@@ -176,12 +176,12 @@ int main(int argc, char** argv) {
     };
 
     GLubyte vertIndices[] = {
-        1,2,3, 2,1,0,
-        3,7,5, 5,1,3,
-        7,6,4, 5,7,4,
-        6,2,0, 4,6,0,
-        2,6,3, 6,7,3,
-        1,4,0, 4,1,5
+        2,3,1, 0,2,1,
+        7,5,3, 5,1,3,
+        6,4,7, 4,5,7,
+        2,0,6, 0,4,6,
+        6,3,2, 3,6,7,
+        4,0,1, 1,5,4
     };
 
     GLuint vboVertCoords = createVBO(vertCoords, sizeof(vertCoords), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
 
         glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
         glm::mat4 view = glm::lookAt(glm::vec3(x, 1.5f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 project = glm::perspectiveFov(45.0f, (float) width, (float) height, 1.0f, 16.0f);
+        glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 16.0f);
 
         glm::mat4 matrix = project * view * model;
 
