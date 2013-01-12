@@ -93,8 +93,32 @@ GLuint createVBO(void* data, GLuint size, GLenum type, GLenum hint) {
 }
 
 typedef struct {
-    GLuint 
-} cube_t;
+    GLint attr;
+    GLuint vbo;
+
+    // Vertex Attribute Array Params
+    GLuint size;
+    GLenum type;
+    GLboolean normalized;
+    GLsizei stride;
+    const GLvoid* offset;
+} GLAttribute_t;
+
+GLuint createVAO(GLAttribute_t* attrs, GLsizei attrCount) {
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    for (GLuint i=0; i<attrCount; ++i) {
+        GLAttribute_t* attr = attrs + i;
+
+        glEnableVertexAttribArray(attr->attr);
+        glBindBuffer(GL_ARRAY_BUFFER, attr->vbo);
+        glVertexAttribPointer(attr->attr, attr->size, attr->type, attr->normalized, attr->stride, attr->offset);
+    }
+
+    return vao;
+}
 
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
@@ -125,10 +149,6 @@ int main(int argc, char** argv) {
 
     GLint attrCoord = program->GetAttribute("vCoord");
     GLint attrColor = program->GetAttribute("vColor");
-    
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
     /*
         Upload vertex data into VBOs
@@ -171,13 +191,12 @@ int main(int argc, char** argv) {
     /*
         Setup the VAO
     */
-    glEnableVertexAttribArray(attrCoord);
-    glBindBuffer(GL_ARRAY_BUFFER, vboVertCoords);
-    glVertexAttribPointer(attrCoord, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    
-    glEnableVertexAttribArray(attrColor);
-    glBindBuffer(GL_ARRAY_BUFFER, vboVertColors);
-    glVertexAttribPointer(attrColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    GLAttribute_t vaoAttrs[] = {
+        {attrCoord, vboVertCoords, 3, GL_FLOAT, GL_FALSE, 0, 0},
+        {attrColor, vboVertColors, 3, GL_FLOAT, GL_FALSE, 0, 0}
+    };
+
+    GLuint vao = createVAO(vaoAttrs, 2);
 
     do {
         float time = (float) glfwGetTime();
