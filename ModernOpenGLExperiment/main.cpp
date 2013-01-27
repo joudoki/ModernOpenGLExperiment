@@ -173,6 +173,8 @@ public:
         glDeleteBuffers(1, &vbo);
         glDeleteBuffers(1, &ibo);
         glDeleteVertexArrays(1, &vao);
+
+        vbo = ibo = vao = 0;
     }
 
     void Render() {

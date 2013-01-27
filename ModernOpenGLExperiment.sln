@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Trackball", "Trackball\Trackball.vcxproj", "{3F728E89-19DC-4197-8FA4-A74DD384242A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModernOpenGLExperiment", "ModernOpenGLExperiment\ModernOpenGLExperiment.vcxproj", "{3F728E89-19DC-4197-8FA4-A74DD384242A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
