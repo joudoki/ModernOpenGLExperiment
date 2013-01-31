@@ -4,6 +4,7 @@
 #include "Rendering.h"
 
 #include "Shader.h"
+#include "Program.h"
 
 #include <iostream>
 #include <fstream>
@@ -189,18 +190,41 @@ int main(int argc, char** argv) {
     setupOpenGL();
 
     std::string vertexShaderSource = readFile("glsl/one.v.glsl");
+    std::string fragmentShaderSource = readFile("glsl/one.f.glsl");
 
     Shader<VertexShader>* vertexShader = Shader<VertexShader>::CompileFromSource(vertexShaderSource);
+    Shader<FragmentShader>* fragmentShader = Shader<FragmentShader>::CompileFromSource(fragmentShaderSource);
 
     if (!vertexShader->IsValid()) {
-        fprintf(stderr, "Compile Error: %s\n", vertexShader->GetErrorLog().c_str());
+        fprintf(stderr, "Compile Error: %s\n", vertexShader->GetCompileLog().c_str());
         delete vertexShader;
 
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
+    if (!fragmentShader->IsValid()) {
+        fprintf(stderr, "Compile Error: %s\n", fragmentShader->GetCompileLog().c_str());
+        delete fragmentShader;
 
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
+
+    Program* program = Program::CreateFromShaders(vertexShader, fragmentShader);
+
+    // Don't need shaders after the program is linked
+    delete vertexShader;
+    delete fragmentShader;
+    
+    if (!program->IsValid()) {
+        fprintf(stderr, "Link Error: %s\n", program->GetLinkLog().c_str());
+        
+        delete program;
+
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
 
     /*
         Setup the program & shaders

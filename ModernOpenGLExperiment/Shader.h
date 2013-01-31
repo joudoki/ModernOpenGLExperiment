@@ -40,8 +40,10 @@ public:
     }
 
     bool IsValid() const {
-        return shaderHandle > 0 && compileResult == GL_TRUE;
+        return shaderHandle != 0 && compileResult == GL_TRUE;
     }
+
+    GLuint GetHandle() const { return shaderHandle; }
 
     std::string GetCompileLog() const {
         std::string log;
