@@ -3,6 +3,13 @@
 
 #include "Rendering.h"
 
+/**
+ * Shader - Represents a single OpenGL shader of a specific type. The template on the
+ * class ensures compile-time checking of making sure that the right types of shaders
+ * get assigned in the right places.
+ *
+ * Typically, two of these shaders will be accumulated into a Program.
+ */
 template <ShaderType type>
 class Shader
 {
@@ -36,7 +43,7 @@ public:
         return shaderHandle > 0 && compileResult == GL_TRUE;
     }
 
-    std::string GetErrorLog() const {
+    std::string GetCompileLog() const {
         std::string log;
         
         GLint logLength;
