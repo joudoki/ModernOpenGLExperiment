@@ -66,7 +66,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GLProgram.cpp" />
     <ClCompile Include="gl_core_3_3.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -74,7 +73,6 @@
     <ClCompile Include="Program.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GLProgram.h" />
     <ClInclude Include="gl_core_3_3.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />

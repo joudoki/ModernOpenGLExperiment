@@ -13,14 +13,17 @@ private:
     GLuint programHandle;
     GLint  linkResult;
 
-    std::map<std::string, Uniform_t> uniforms;
-    std::map<std::string, VertexAttribute_t> vertexAttributes;
+    Uniform_t* uniforms;
+    VertexAttribute_t* attributes;
 
     VertexArray* vertexArray;
 
-    Program() : programHandle(glCreateProgram()), vertexArray(NULL), linkResult(GL_FALSE) {}
+    Program() : programHandle(glCreateProgram()), linkResult(GL_FALSE),
+        vertexArray(NULL), uniforms(NULL), attributes(NULL) {}
 
     void Link();
+    void AcquireUniforms();
+    //void AcquireAttributes();
 
 public:
     static Program* CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader);

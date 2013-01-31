@@ -23,8 +23,9 @@ enum ShaderType {
 // Uniform for a vertex/fragment shader
 typedef struct {
     std::string name;
-    GLuint id;
+    GLuint location;
     GLenum type;
+    GLint size;
 } Uniform_t;
 
 // Attribute mapping for vertex shader

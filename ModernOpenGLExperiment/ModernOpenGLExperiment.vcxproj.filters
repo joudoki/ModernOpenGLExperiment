@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="GLProgram.cpp" />
     <ClCompile Include="gl_core_3_3.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp">
@@ -15,7 +14,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GLProgram.h" />
     <ClInclude Include="gl_core_3_3.h" />
     <ClInclude Include="Mesh.h">
       <Filter>Rendering</Filter>
