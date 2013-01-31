@@ -1,19 +1,13 @@
 #include <cstdio>
 #include <cstdlib>
 
-// Use a custom-generated opengl header that only includes the core profile
-// glLoadGen - https://bitbucket.org/alfonse/glloadgen
-#include "gl_core_3_3.h"
+#include "Rendering.h"
 
-#define GLFW_NO_GLU
-#include <GL/glfw.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "Shader.h"
 
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -194,9 +188,23 @@ int main(int argc, char** argv) {
     printf("OpenGL %s\n", glGetString(GL_VERSION));
     setupOpenGL();
 
+    std::string vertexShaderSource = readFile("glsl/one.v.glsl");
+
+    Shader<VertexShader>* vertexShader = Shader<VertexShader>::CompileFromSource(vertexShaderSource);
+
+    if (!vertexShader->IsValid()) {
+        fprintf(stderr, "Compile Error: %s\n", vertexShader->GetErrorLog().c_str());
+        delete vertexShader;
+
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
+
+
+
     /*
         Setup the program & shaders
-    */
+    /
     GLProgram* program = GLProgram::Create(
         readFile("glsl/one.v.glsl").c_str(), 
         readFile("glsl/one.f.glsl").c_str()
@@ -214,7 +222,7 @@ int main(int argc, char** argv) {
     
     /*
         Setup objects
-    */
+    /
     Cube* cube = new Cube();
     cube->Upload(attrCoord, attrColor);
 
@@ -244,10 +252,11 @@ int main(int argc, char** argv) {
 
     /*
         Cleanup
-    */
+    /
     cube->Cleanup();
     delete cube;
     delete program;
+    */
     
     glfwTerminate();
     return EXIT_SUCCESS;
