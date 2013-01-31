@@ -20,7 +20,7 @@ enum ShaderType {
     FragmentShader = GL_FRAGMENT_SHADER
 };
 
-// Uniform for a vertex/fragment shader
+// Uniform for a shader
 typedef struct {
     std::string name;
     GLuint location;
@@ -28,11 +28,12 @@ typedef struct {
     GLint size;
 } Uniform_t;
 
-// Attribute mapping for vertex shader
+// Attribute for a shader
 typedef struct {
     std::string name;
-    GLuint id;
+    GLuint location;
     GLenum type;
+    GLint size;
 } VertexAttribute_t;
 
 // Format of single vertex attribute in VBO

@@ -4,10 +4,17 @@ Program::~Program() {
     glDeleteProgram(programHandle);
     programHandle = 0;
 
+    /*
     if (uniforms != NULL) {
         delete[] uniforms;
         uniforms = NULL;
     }
+
+    if (attributes != NULL) {
+        delete[] attributes;
+        attributes = NULL;
+    }
+    */
 }
 
 void Program::Link() {
@@ -21,14 +28,16 @@ void Program::AcquireUniforms() {
     glGetProgramiv(programHandle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
 
     if (activeUniforms > 0 && maxNameLength > 0) {
-        uniforms = new Uniform_t[activeUniforms];
+        //uniforms = new Uniform_t[activeUniforms];
 
-        GLchar* uniformName = new char[maxNameLength];
+        GLchar* uniformName = new GLchar[maxNameLength];
         GLint uniformSize;
         GLenum uniformType;
 
         for (int i=0; i<activeUniforms; ++i) {
             glGetActiveUniform(programHandle, i, maxNameLength, NULL, &uniformSize, &uniformType, uniformName);
+
+            // At some point, when I'm finally dealing with textures, I'll have to deal with samplers here
 
             Uniform_t uniform = {
                 std::string(uniformName),
@@ -38,18 +47,41 @@ void Program::AcquireUniforms() {
             };
 
             // Add to uniform map
-            uniforms[i] = uniform;
+            uniforms[uniformName] = uniform;
         }
 
         delete[] uniformName;
     }
 }
 
-/*
 void Program::AcquireAttributes() {
+    GLint activeAttributes, maxNameLength;
+    glGetProgramiv(programHandle, GL_ACTIVE_ATTRIBUTES, &activeAttributes);
+    glGetProgramiv(programHandle, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxNameLength);
 
+    if (activeAttributes > 0 && maxNameLength > 0) {
+        //attributes = new VertexAttribute_t[activeAttributes];
+
+        GLchar* attribName = new GLchar[maxNameLength];
+        GLint attribSize;
+        GLenum attribType;
+
+        for (int i=0; i<activeAttributes; ++i) {
+            glGetActiveAttrib(programHandle, i, maxNameLength, NULL, &attribSize, &attribType, attribName);
+
+            VertexAttribute_t attribute = {
+                std::string(attribName),
+                glGetAttribLocation(programHandle, attribName),
+                attribType,
+                attribSize
+            };
+
+            attributes[attribName] = attribute;
+        }
+
+        delete[] attribName;
+    }
 }
-*/
 
 Program* Program::CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader) {
     Program* program = new Program();
@@ -61,6 +93,7 @@ Program* Program::CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<F
 
     if (program->IsValid()) {
         program->AcquireUniforms();
+        program->AcquireAttributes();
     }
 
     return program;
