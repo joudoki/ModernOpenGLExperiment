@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "GLProgram.h"
+using namespace std;
 
 #define BUFFER_OFFSET(i) ((char*) NULL + (i))
 
@@ -179,36 +179,25 @@ public:
     }
 };
 
-int main(int argc, char** argv) {
-    printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
-    
-    int width = 800, height = 600;
-    if (!acquireContext(width, height)) return EXIT_FAILURE;
-    if (!acquireFunctions()) return EXIT_FAILURE;
-    
-    printf("OpenGL %s\n", glGetString(GL_VERSION));
-    setupOpenGL();
-
-    std::string vertexShaderSource = readFile("glsl/one.v.glsl");
-    std::string fragmentShaderSource = readFile("glsl/one.f.glsl");
-
+Program* MakeProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource) {
     Shader<VertexShader>* vertexShader = Shader<VertexShader>::CompileFromSource(vertexShaderSource);
     Shader<FragmentShader>* fragmentShader = Shader<FragmentShader>::CompileFromSource(fragmentShaderSource);
 
     if (!vertexShader->IsValid()) {
         fprintf(stderr, "Compile Error: %s\n", vertexShader->GetCompileLog().c_str());
+
         delete vertexShader;
 
-        glfwTerminate();
-        return EXIT_FAILURE;
+        return NULL;
     }
 
     if (!fragmentShader->IsValid()) {
         fprintf(stderr, "Compile Error: %s\n", fragmentShader->GetCompileLog().c_str());
+
+        delete vertexShader;
         delete fragmentShader;
 
-        glfwTerminate();
-        return EXIT_FAILURE;
+        return NULL;
     }
 
     Program* program = Program::CreateFromShaders(vertexShader, fragmentShader);
@@ -222,31 +211,41 @@ int main(int argc, char** argv) {
         
         delete program;
 
-        glfwTerminate();
-        return EXIT_FAILURE;
+        return NULL;
     }
 
-    /*
-        Setup the program & shaders
-    /
-    GLProgram* program = GLProgram::Create(
-        readFile("glsl/one.v.glsl").c_str(), 
-        readFile("glsl/one.f.glsl").c_str()
-    );
+    return program;
+}
+
+int main(int argc, char** argv) {
+    printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
+    
+    int width = 800, height = 600;
+    if (!acquireContext(width, height)) return EXIT_FAILURE;
+    if (!acquireFunctions()) return EXIT_FAILURE;
+    
+    printf("OpenGL %s\n", glGetString(GL_VERSION));
+    setupOpenGL();
+
+    Program* program = MakeProgram(readFile("glsl/one.v.glsl"), readFile("glsl/one.f.glsl"));
 
     if (program == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    program->Activate();
+    /*
+        Setup the program & shaders
+    */
+    program->Bind();
 
-    GLint attrCoord = program->GetAttribute("vCoord");
-    GLint attrColor = program->GetAttribute("vColor");
+    GLuint attrCoord = program->GetAttribute("vCoord")->location;
+    GLuint attrColor = program->GetAttribute("vColor")->location;
+    GLuint uniformTransform = program->GetUniform("transform")->location;
     
     /*
         Setup objects
-    /
+    */
     Cube* cube = new Cube();
     cube->Upload(attrCoord, attrColor);
 
@@ -262,7 +261,7 @@ int main(int argc, char** argv) {
         glm::mat4 matrix = project * view * model;
 
         glUniformMatrix4fv(
-            program->GetUniform("transform"),
+            uniformTransform,
             1,          // Count
             GL_FALSE,   // Do not transpose
             glm::value_ptr(matrix)
@@ -276,11 +275,10 @@ int main(int argc, char** argv) {
 
     /*
         Cleanup
-    /
+    */
     cube->Cleanup();
     delete cube;
     delete program;
-    */
     
     glfwTerminate();
     return EXIT_SUCCESS;

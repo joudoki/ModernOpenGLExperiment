@@ -30,19 +30,16 @@ private:
 
 public:
     static Program* CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader);
-    //static Program* CreateFromShaders(const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
-    //static Program* CreateFromShaders(const char* vertexShaderPath, const char* fragmentShaderPath);
 
     ~Program();
 
     std::string GetLinkLog() const;
 
     bool IsValid() const { return programHandle != 0 && linkResult == GL_TRUE; }
-
     void Bind() const { glUseProgram(programHandle); }
 
-    //Uniform_t& GetUniform(const std::string& name) { return uniforms[name]; }
-    //VertexAttribute_t& 
+    const Uniform_t* GetUniform(const std::string& name) const;
+    const VertexAttribute_t* GetAttribute(const std::string& attrName) const;
 
     //void setUniform(Uniform_t* uniform, void* value);
 

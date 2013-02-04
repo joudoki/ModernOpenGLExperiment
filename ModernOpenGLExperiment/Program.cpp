@@ -54,6 +54,14 @@ void Program::AcquireUniforms() {
     }
 }
 
+const Uniform_t* Program::GetUniform(const std::string& uniformName) const {
+    auto it = uniforms.find(uniformName);
+    
+    return (it == uniforms.end())
+        ? NULL
+        : &((*it).second);
+}
+
 void Program::AcquireAttributes() {
     GLint activeAttributes, maxNameLength;
     glGetProgramiv(programHandle, GL_ACTIVE_ATTRIBUTES, &activeAttributes);
@@ -81,6 +89,14 @@ void Program::AcquireAttributes() {
 
         delete[] attribName;
     }
+}
+
+const VertexAttribute_t* Program::GetAttribute(const std::string& attrName) const {
+    auto it = attributes.find(attrName);
+    
+    return (it == attributes.end())
+        ? NULL
+        : &((*it).second);
 }
 
 Program* Program::CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader) {
