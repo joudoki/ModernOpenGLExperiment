@@ -1,6 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include <vector>
+
 #include "Rendering.h"
 
 // Mesh: Contains the actual vertex data for a model
@@ -8,32 +10,32 @@
 // and the liftime of the attached index buffer object
 class Mesh {
 private:
-    GLuint vboHandle;
-    GLint vertexCount;
-    VertexFormat_t* vertexFormat; // Specify the layout of attributes in VBO
+    static const GLuint VBO_VERTICES = 0;
+    static const GLuint VBO_INDICES = 1;
 
-    GLuint iboHandle;
+    GLuint vaoHandle;
+    GLuint vboHandles[2];
+    
     GLuint indexCount;
-    void* indexFormat;
-
-    GLenum primitiveType;
+    GLuint vertexCount;
+    GLuint vertexSize;
+    
+    IndexType indexFormat;
+    std::vector<VertexAttributeBinding_t> vertexFormat;
+    
+    PrimitiveType primitiveType;
 
     // OpenGL performance hint
     GLenum isDynamic;
 
-    Mesh() : vboHandle(0), vertexCount(0), vertexFormat(NULL),
-        iboHandle(0), indexCount(0), indexFormat(NULL),
-        primitiveType(GL_TRIANGLES), isDynamic(GL_STATIC_DRAW) {
-
-    }
-
-    ~Mesh() {}
-
 public:
-    void SetVertexData(void* data, GLint vertexCount);
-    
-    void GetMesh();
-    void GetProgram();
+    Mesh(VertexAttributeBinding_t* attribFormats, GLuint attribCount);
+    ~Mesh();
+
+    void SetVertexData(GLuint count, GLuint size, void* data);
+    void SetIndexData(IndexType indexFormat, GLuint count, GLuint size, void* data);
+
+    GLenum Render() const;
 };
 
 #endif

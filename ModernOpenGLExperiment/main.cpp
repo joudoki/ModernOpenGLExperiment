@@ -5,6 +5,7 @@
 
 #include "Shader.h"
 #include "Program.h"
+#include "Mesh.h"
 
 #include <iostream>
 #include <fstream>
@@ -13,8 +14,6 @@
 #include <vector>
 
 using namespace std;
-
-#define BUFFER_OFFSET(i) ((char*) NULL + (i))
 
 int acquireContext(int width, int height) {
     // Context Creation
@@ -79,106 +78,6 @@ std::string readFile(const char* fileName) {
     return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
 }
 
-GLuint createVBO(void* data, GLuint size, GLenum type, GLenum hint) {
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-
-    glBindBuffer(type, vbo);
-    glBufferData(type, size, data, hint);
-
-    return vbo;
-}
-
-typedef struct {
-    GLint attr;
-    GLuint vbo;
-
-    // Vertex Attribute Array Params
-    GLuint size;
-    GLenum type;
-    GLboolean normalized;
-    GLsizei stride;
-    const GLvoid* offset;
-} GLAttribute_t;
-
-GLuint createVAO(GLAttribute_t* attrs, GLsizei attrCount) {
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    for (GLuint i=0; i<attrCount; ++i) {
-        GLAttribute_t* attr = attrs + i;
-
-        glEnableVertexAttribArray(attr->attr);
-        glBindBuffer(GL_ARRAY_BUFFER, attr->vbo);
-        glVertexAttribPointer(attr->attr, attr->size, attr->type, attr->normalized, attr->stride, attr->offset);
-    }
-
-    return vao;
-}
-
-typedef struct {
-    GLfloat coord[3];
-    GLfloat color[3];
-} Vertex_t;
-
-class Cube {
-private:
-    GLuint vao;
-    GLuint vbo;
-    GLuint ibo;
-
-public:
-    Cube() : vao(0), vbo(0), ibo(0) { }
-    ~Cube() { }
-
-    void Upload(GLuint attrCoord, GLuint attrColor) {
-        Vertex_t data[] = {
-            {{-1.0f, -1.0f, -1.0f}, {0.5f, 0.5f, 0.5f}},
-            {{-1.0f, -1.0f,  1.0f}, {0.0f, 0.0f, 1.0f}},
-            {{-1.0f,  1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
-            {{-1.0f,  1.0f,  1.0f}, {0.0f, 1.0f, 1.0f}},
-            {{ 1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}},
-            {{ 1.0f, -1.0f,  1.0f}, {1.0f, 0.0f, 1.0f}},
-            {{ 1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 0.0f}},
-            {{ 1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}}
-        };
-
-        GLubyte indices[] = {
-            2,3,1, 0,2,1,
-            7,5,3, 5,1,3,
-            6,4,7, 4,5,7,
-            2,0,6, 0,4,6,
-            6,3,2, 3,6,7,
-            4,0,1, 1,5,4
-        };
-
-        vbo = createVBO(data,       sizeof(data),       GL_ARRAY_BUFFER,         GL_STATIC_DRAW);
-        ibo = createVBO(indices,    sizeof(indices),    GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-        
-        GLAttribute_t vaoAttrs[] = {
-            {attrCoord, vbo, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0},
-            {attrColor, vbo, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
-        };
-
-        vao = createVAO(vaoAttrs, 2);
-    }
-
-    void Cleanup() {
-        glDeleteBuffers(1, &vbo);
-        glDeleteBuffers(1, &ibo);
-        glDeleteVertexArrays(1, &vao);
-
-        vbo = ibo = vao = 0;
-    }
-
-    void Render() {
-        glBindVertexArray(vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
-    }
-};
-
 Program* MakeProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource) {
     Shader<VertexShader>* vertexShader = Shader<VertexShader>::CompileFromSource(vertexShaderSource);
     Shader<FragmentShader>* fragmentShader = Shader<FragmentShader>::CompileFromSource(fragmentShaderSource);
@@ -217,6 +116,43 @@ Program* MakeProgram(const std::string& vertexShaderSource, const std::string& f
     return program;
 }
 
+Mesh* MakeCubeMesh(Program* program) {
+    GLuint attrCoord = program->GetAttribute("vCoord")->location;
+    GLuint attrColor = program->GetAttribute("vColor")->location;
+
+    VertexAttributeBinding_t vertFmt[] = {
+        {attrCoord, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
+        {attrColor, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+    };
+
+    Mesh* mesh = new Mesh(vertFmt, 2);
+    
+    float data[] = {
+        -1.0f, -1.0f, -1.0f,     0.5f, 0.5f, 0.5f,
+        -1.0f, -1.0f,  1.0f,     0.0f, 0.0f, 1.0f,
+        -1.0f,  1.0f, -1.0f,     0.0f, 1.0f, 0.0f,
+        -1.0f,  1.0f,  1.0f,     0.0f, 1.0f, 1.0f,
+         1.0f, -1.0f, -1.0f,     1.0f, 0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f,     1.0f, 0.0f, 1.0f,
+         1.0f,  1.0f, -1.0f,     1.0f, 1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f,     1.0f, 1.0f, 1.0f
+    };
+
+    GLubyte indices[] = {
+        2,3,1, 0,2,1,
+        7,5,3, 5,1,3,
+        6,4,7, 4,5,7,
+        2,0,6, 0,4,6,
+        6,3,2, 3,6,7,
+        4,0,1, 1,5,4
+    };
+
+    mesh->SetVertexData(8, sizeof(data), data);
+    mesh->SetIndexData(UnsignedByteIndex, 36, sizeof(indices), indices);
+
+    return mesh;
+}
+
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
     
@@ -234,20 +170,13 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    /*
-        Setup the program & shaders
-    */
+    // Setup the program & shaders
     program->Bind();
 
-    GLuint attrCoord = program->GetAttribute("vCoord")->location;
-    GLuint attrColor = program->GetAttribute("vColor")->location;
     GLuint uniformTransform = program->GetUniform("transform")->location;
     
-    /*
-        Setup objects
-    */
-    Cube* cube = new Cube();
-    cube->Upload(attrCoord, attrColor);
+    // Setup objects
+    Mesh* cube = MakeCubeMesh(program);
 
     do {
         float time = (float) glfwGetTime();
@@ -273,10 +202,7 @@ int main(int argc, char** argv) {
         glfwSwapBuffers();
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
-    /*
-        Cleanup
-    */
-    cube->Cleanup();
+    // Cleanup
     delete cube;
     delete program;
     

@@ -20,9 +20,7 @@ private:
     std::map<std::string, Uniform_t> uniforms;
     std::map<std::string, VertexAttribute_t> attributes;
 
-    VertexArray* vertexArray;
-
-    Program() : programHandle(glCreateProgram()), linkResult(GL_FALSE), vertexArray(NULL) {}
+    Program() : programHandle(glCreateProgram()), linkResult(GL_FALSE) {}
 
     void Link();
     void AcquireUniforms();
