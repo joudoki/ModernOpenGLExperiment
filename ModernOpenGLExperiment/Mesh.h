@@ -29,7 +29,7 @@ private:
     GLenum isDynamic;
 
 public:
-    Mesh(VertexAttributeBinding_t* attribFormats, GLuint attribCount);
+    Mesh(PrimitiveType primitiveType, VertexAttributeBinding_t* attribFormats, GLuint attribCount);
     ~Mesh();
 
     void SetVertexData(GLuint count, GLuint size, void* data);

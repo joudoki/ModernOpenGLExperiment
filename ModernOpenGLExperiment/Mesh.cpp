@@ -1,8 +1,8 @@
 #include "Mesh.h"
 
-Mesh::Mesh(VertexAttributeBinding_t* attribFormats, GLuint attribCount) : 
+Mesh::Mesh(PrimitiveType primitiveType, VertexAttributeBinding_t* attribFormats, GLuint attribCount) : 
     indexCount(0), vertexCount(0), vertexSize(0), indexFormat(UnsignedShortIndex),
-    primitiveType(TrianglesPrimitive), isDynamic(GL_STATIC_DRAW) {
+    primitiveType(primitiveType), isDynamic(GL_STATIC_DRAW) {
 
     glGenBuffers(2, vboHandles);
     glBindBuffer(GL_ARRAY_BUFFER, vboHandles[VBO_VERTICES]);

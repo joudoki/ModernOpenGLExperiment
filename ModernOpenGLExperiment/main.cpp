@@ -63,6 +63,7 @@ void setupOpenGL() {
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
 
     // Setup windowing transform
     glViewport(0, 0, 800, 600);
@@ -125,7 +126,7 @@ Mesh* MakeCubeMesh(Program* program) {
         {attrColor, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
     };
 
-    Mesh* mesh = new Mesh(vertFmt, 2);
+    Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 2);
     
     float data[] = {
         -1.0f, -1.0f, -1.0f,     0.5f, 0.5f, 0.5f,
@@ -145,6 +146,35 @@ Mesh* MakeCubeMesh(Program* program) {
         2,0,6, 0,4,6,
         6,3,2, 3,6,7,
         4,0,1, 1,5,4
+    };
+
+    mesh->SetVertexData(8, sizeof(data), data);
+    mesh->SetIndexData(UnsignedByteIndex, 36, sizeof(indices), indices);
+
+    return mesh;
+}
+Mesh* MakeAxisMesh(Program* program, float r) {
+    GLuint attrCoord = program->GetAttribute("vCoord")->location;
+    GLuint attrColor = program->GetAttribute("vColor")->location;
+
+    VertexAttributeBinding_t vertFmt[] = {
+        {attrCoord, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
+        {attrColor, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+    };
+
+    Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 2);
+    
+    float data[] = {
+        0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,
+        r,    0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+        0.0f, r,    0.0f,   0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, r,      0.0f, 0.0f, 1.0f,
+    };
+
+    GLubyte indices[] = {
+        1, 0,
+        2, 0,
+        3, 0
     };
 
     mesh->SetVertexData(8, sizeof(data), data);
@@ -177,6 +207,7 @@ int main(int argc, char** argv) {
     
     // Setup objects
     Mesh* cube = MakeCubeMesh(program);
+    Mesh* axis = MakeAxisMesh(program, 8.0f);
 
     do {
         float time = (float) glfwGetTime();
@@ -185,7 +216,7 @@ int main(int argc, char** argv) {
 
         glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
         glm::mat4 view = glm::lookAt(glm::vec3(x, 1.5f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 16.0f);
+        glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
 
         glm::mat4 matrix = project * view * model;
 
@@ -197,6 +228,7 @@ int main(int argc, char** argv) {
         );
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        axis->Render();
         cube->Render();
 
         glfwSwapBuffers();
@@ -204,6 +236,7 @@ int main(int argc, char** argv) {
 
     // Cleanup
     delete cube;
+    delete axis;
     delete program;
     
     glfwTerminate();
