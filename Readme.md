@@ -22,3 +22,10 @@ following topics:
 * http://www.glfw.org/
 * https://bitbucket.org/alfonse/glloadgen
 * http://www.opengl.org/registry/doc/glspec33.core.20100311.pdf
+
+I also used the Gameplay engine as a reference implementation for the management and lifetimes of VBOs, VAOs, Programs,
+shaders, etc. Gameplay is a multi-platform game engine that is fairly straightforward to understand and runs only on an
+underlying OpenGL graphics context (as opposed to a more comprehensive engine that may run also run on DirectX). My
+design of the Mesh, Model, and Program classes was heavily influenced by the corresponding implementation in Gameplay:
+
+https://github.com/blackberry/GamePlay
