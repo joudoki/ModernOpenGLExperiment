@@ -39,8 +39,8 @@ void Mesh::SetIndexData(IndexType format, GLuint count, GLuint size, void* data)
     indexCount = count;
     indexFormat = format;
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboHandles[VBO_INDICES]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, isDynamic);
+    glBindBuffer(GL_ARRAY_BUFFER, vboHandles[VBO_INDICES]);
+    glBufferData(GL_ARRAY_BUFFER, size, data, isDynamic);
 }
 
 GLenum Mesh::Render() const {
