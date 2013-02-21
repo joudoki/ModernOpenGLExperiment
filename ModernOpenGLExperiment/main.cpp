@@ -194,8 +194,12 @@ int main(int argc, char** argv) {
     if (!acquireContext(width, height)) return EXIT_FAILURE;
     if (!acquireFunctions()) return EXIT_FAILURE;
     
-    printf("OpenGL %s\n", glGetString(GL_VERSION));
     setupOpenGL();
+
+    printf("\nOpenGL:\n");
+    printf("  [GL_VENDOR]:     %s;\n", glGetString(GL_VENDOR));
+    printf("  [GL_RENDERER]:   %s;\n", glGetString(GL_RENDERER));
+    printf("  [GL_VERSION]:    %s;\n", glGetString(GL_VERSION));
 
     Program* program = MakeProgram(
         readFile("glsl/one.v.glsl"),

@@ -10,10 +10,6 @@ glm::vec3 Trackball::ScreenToTrackballCoordinates(int i, int j) const {
 		 1.0 - 2.0 * float(j) / resH
 	);
 	
-	// Radius of Sphere
-	//float r  = 1.0;
-	//float r2 = r*r;
-	
 	float x2y2 = p.x*p.x + p.y*p.y;
 	float d = r2 - x2y2;
 	
@@ -42,7 +38,7 @@ glm::mat4 Trackball::GetRotationMatrix() const {
     glm::vec3 axis = glm::cross(dragStart, dragStop);
     
     float dot   = glm::dot(dragStart, dragStop);
-    float angle = glm::acos(dot) * 180.0f / 3.14159f;
+    float angle = glm::acos(dot) * (180.0f / 3.14159f);
     
     glm::mat4 rot = glm::rotate(glm::mat4(), angle, axis);
 

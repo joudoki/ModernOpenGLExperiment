@@ -5,6 +5,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+/**
+ * Trackball
+ * Simple trackball class for user input in a model viewer
+ * http://www.opengl.org/wiki/Trackball
+ *
+ * I designed this class to be as simple to understand as possible, thus all code related to 
+ * the trackball itself is contained here (including the event handling). This works well with
+ * GLFW, since it's easy to simply poll the mouse state without getting lost in callbacks.
+ */
 class Trackball {
 private:
     float r2;

@@ -12,7 +12,12 @@
     <ClCompile Include="Program.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Trackball.cpp" />
+    <ClCompile Include="Trackball.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl_core_3_3.h" />
@@ -31,11 +36,19 @@
     <ClInclude Include="Shader.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Trackball.h" />
+    <ClInclude Include="Trackball.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Rendering">
       <UniqueIdentifier>{48fb96ff-990f-4864-b639-1f4e0fbfe232}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{c8222a7e-9816-44c2-a802-af96b9173460}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
