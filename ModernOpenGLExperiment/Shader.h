@@ -11,8 +11,7 @@
  * Typically, two of these shaders will be accumulated into a Program.
  */
 template <ShaderType type>
-class Shader
-{
+class Shader {
 private:
     GLuint shaderHandle;
     GLint  compileResult;
