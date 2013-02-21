@@ -7,6 +7,8 @@
 #include "Program.h"
 #include "Mesh.h"
 
+#include "Trackball.h"
+
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -118,8 +120,8 @@ Program* MakeProgram(const std::string& vertexShaderSource, const std::string& f
 }
 
 Mesh* MakeCubeMesh(Program* program) {
-    GLuint attrCoord = program->GetAttribute("vCoord")->location;
-    GLuint attrColor = program->GetAttribute("vColor")->location;
+    GLuint attrCoord = program->GetAttributeID("vCoord");
+    GLuint attrColor = program->GetAttributeID("vColor");
 
     VertexAttributeBinding_t vertFmt[] = {
         {attrCoord, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
@@ -154,8 +156,8 @@ Mesh* MakeCubeMesh(Program* program) {
     return mesh;
 }
 Mesh* MakeAxisMesh(Program* program, float r) {
-    GLuint attrCoord = program->GetAttribute("vCoord")->location;
-    GLuint attrColor = program->GetAttribute("vColor")->location;
+    GLuint attrCoord = program->GetAttributeID("vCoord");
+    GLuint attrColor = program->GetAttributeID("vColor");
 
     VertexAttributeBinding_t vertFmt[] = {
         {attrCoord, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
@@ -193,7 +195,10 @@ int main(int argc, char** argv) {
     printf("OpenGL %s\n", glGetString(GL_VERSION));
     setupOpenGL();
 
-    Program* program = MakeProgram(readFile("glsl/one.v.glsl"), readFile("glsl/one.f.glsl"));
+    Program* program = MakeProgram(
+        readFile("glsl/one.v.glsl"),
+        readFile("glsl/one.f.glsl")
+    );
 
     if (program == NULL) {
         glfwTerminate();
@@ -209,16 +214,33 @@ int main(int argc, char** argv) {
     Mesh* cube = MakeCubeMesh(program);
     Mesh* axis = MakeAxisMesh(program, 8.0f);
 
+    // Setup trackball interface
+    Trackball trackball(width, height, 1.0f, glm::mat4(1.0f));
+    
+    glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
+
+    glm::mat4 viewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
+    glm::mat4 viewRotate = glm::mat4(1.0f);
+
+    glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
+
     do {
         float time = (float) glfwGetTime();
 
-        float x = 1.5f * glm::cos(time), z = 1.5f * glm::sin(time);
+        //float x = 1.5f * glm::cos(time), z = 1.5f * glm::sin(time);
+        //glm::mat4 view = glm::lookAt(glm::vec3(x, 1.5f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-        glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
-        glm::mat4 view = glm::lookAt(glm::vec3(x, 1.5f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
+        // Update trackball state
+        int mouseX, mouseY;
+        glfwGetMousePos(&mouseX, &mouseY);
+        trackball.MouseUpdate(
+            glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS,
+            mouseX, mouseY
+        );
 
-        glm::mat4 matrix = project * view * model;
+        viewRotate = trackball.GetRotationMatrix();
+
+        glm::mat4 matrix = project * viewTranslate * viewRotate * model;
 
         glUniformMatrix4fv(
             uniformTransform,

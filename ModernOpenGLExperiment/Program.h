@@ -38,6 +38,7 @@ public:
 
     const Uniform_t* GetUniform(const std::string& name) const;
     const VertexAttribute_t* GetAttribute(const std::string& attrName) const;
+    GLuint GetAttributeID(const std::string& attrName) const;
 
     //void setUniform(Uniform_t* uniform, void* value);
 

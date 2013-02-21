@@ -12,6 +12,7 @@
     <ClCompile Include="Program.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Trackball.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl_core_3_3.h" />
@@ -30,6 +31,7 @@
     <ClInclude Include="Shader.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Trackball.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Rendering">

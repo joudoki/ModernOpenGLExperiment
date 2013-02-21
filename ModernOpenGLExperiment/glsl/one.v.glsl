@@ -8,6 +8,6 @@ in vec3 vColor;
 flat out vec3 fColor;
 
 void main(void) {
-  gl_Position = transform * vec4(vCoord, 1.0);
-  fColor = vColor;
+    gl_Position = transform * vec4(vCoord, 1.0);
+    fColor = vColor;
 }

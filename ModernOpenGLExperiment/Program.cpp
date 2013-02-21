@@ -99,6 +99,13 @@ const VertexAttribute_t* Program::GetAttribute(const std::string& attrName) cons
         : &((*it).second);
 }
 
+GLuint Program::GetAttributeID(const std::string& attrName) const {
+    const VertexAttribute_t* attr = GetAttribute(attrName);
+    return attr == NULL
+        ? -1
+        : attr->location;
+}
+
 Program* Program::CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader) {
     Program* program = new Program();
 
