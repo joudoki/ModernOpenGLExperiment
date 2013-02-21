@@ -31,6 +31,8 @@ int acquireContext(int width, int height) {
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
     glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
 
+    glfwDisable(GLFW_AUTO_POLL_EVENTS);
+
     if (!glfwOpenWindow(
         width, height,
         8, 8, 8, 8, // RGBA all each 8 bits for 32-bit coloring
@@ -224,8 +226,12 @@ int main(int argc, char** argv) {
 
     glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
 
+    float time(0.0f), lastTime(0.0f);
+
     do {
-        float time = (float) glfwGetTime();
+        time = (float) glfwGetTime();
+
+        glfwPollEvents();
 
         //float x = 1.5f * glm::cos(time), z = 1.5f * glm::sin(time);
         //glm::mat4 view = glm::lookAt(glm::vec3(x, 1.5f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -238,22 +244,25 @@ int main(int argc, char** argv) {
             mouseX, mouseY
         );
 
-        viewRotate = trackball.GetRotationMatrix();
+        // Only render up to 60FPS
+        if (time - lastTime >= 1/60.0f) {
+            // Update the transformation matrix
+            viewRotate = trackball.GetRotationMatrix();
+            glm::mat4 matrix = project * viewTranslate * viewRotate * model;
 
-        glm::mat4 matrix = project * viewTranslate * viewRotate * model;
+            glUniformMatrix4fv(
+                uniformTransform,
+                1,          // Count
+                GL_FALSE,   // Do not transpose
+                glm::value_ptr(matrix)
+            );
 
-        glUniformMatrix4fv(
-            uniformTransform,
-            1,          // Count
-            GL_FALSE,   // Do not transpose
-            glm::value_ptr(matrix)
-        );
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            axis->Render();
+            cube->Render();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        axis->Render();
-        cube->Render();
-
-        glfwSwapBuffers();
+            glfwSwapBuffers();
+        }
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
