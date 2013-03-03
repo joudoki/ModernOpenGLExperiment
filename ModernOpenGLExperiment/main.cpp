@@ -62,7 +62,7 @@ int acquireFunctions() {
 }
 
 void setupOpenGL() {
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(0.9, 0.9, 0.9, 1.0);
 
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
@@ -193,24 +193,29 @@ int main(int argc, char** argv) {
     printf("  [GL_RENDERER]:   %s;\n", glGetString(GL_RENDERER));
     printf("  [GL_VERSION]:    %s;\n", glGetString(GL_VERSION));
 
-    Program* program = MakeProgram(
+    Program* flatShade = MakeProgram(
         readFile("glsl/flatShade.vert"),
         readFile("glsl/flatShade.frag")
     );
 
-    if (program == NULL) {
+    Program* textured = MakeProgram(
+        readFile("glsl/textured.vert"),
+        readFile("glsl/textured.frag")
+    );
+
+    if (flatShade == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
     // Setup the program & shaders
-    program->Bind();
+    flatShade->Bind();
 
-    GLuint uniformTransform = program->GetUniformID("transform");
+    GLuint uniformTransform = flatShade->GetUniformID("transform");
     
     // Setup objects
-    Mesh* cube = MakeCubeMesh(program);
-    Mesh* axis = MakeAxisMesh(program, 8.0f);
+    Mesh* cube = MakeCubeMesh(flatShade);
+    Mesh* axis = MakeAxisMesh(flatShade, 8.0f);
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4(1.0f));
@@ -266,7 +271,8 @@ int main(int argc, char** argv) {
     // Cleanup
     delete cube;
     delete axis;
-    delete program;
+    delete flatShade;
+    delete textured;
     
     glfwTerminate();
     return EXIT_SUCCESS;
