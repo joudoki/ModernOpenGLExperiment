@@ -19,7 +19,11 @@ glm::vec3 MD3ModelLoader::DecodeNormal(short normal) {
     );
 }
 
-bool MD3ModelLoader::LoadFromFile(const char* fileName, Vertex_t** vertexData, GLubyte** indexData) {
+bool MD3ModelLoader::LoadFromFile(
+    const char* fileName,
+    Vertex_t*& vertexData, int& vertexCount,
+    GLushort*& indexData, int& triangleCount
+) {
     std::ifstream modelFile(fileName, std::ios::binary);
     if (!modelFile) throw (errno);
     
@@ -46,8 +50,11 @@ bool MD3ModelLoader::LoadFromFile(const char* fileName, Vertex_t** vertexData, G
         MD3::Surface_t surface;
         modelFile.read((char*)&surface, sizeof(MD3::Surface_t));
 
-        (*vertexData) = new Vertex_t[surface.numVerts];
-        (*indexData) = new GLubyte[surface.numTriangles*3];
+        vertexData = new Vertex_t[surface.numVerts];
+        indexData = new GLushort[surface.numTriangles*3];
+
+        vertexCount = surface.numVerts;
+        triangleCount = surface.numTriangles;
         
         // Read triangles
         modelFile.seekg(surfaceOffset + surface.offsetTriangles);
@@ -57,9 +64,9 @@ bool MD3ModelLoader::LoadFromFile(const char* fileName, Vertex_t** vertexData, G
             modelFile.read((char*)&triangle, sizeof(MD3::Triangle_t));
 
             // TODO: Dump these directly into indices instead of copying
-            (*indexData)[3*t]   = triangle.a;
-            (*indexData)[3*t+1] = triangle.b;
-            (*indexData)[3*t+2] = triangle.c;
+            indexData[3*t]   = triangle.a;
+            indexData[3*t+1] = triangle.b;
+            indexData[3*t+2] = triangle.c;
         }
 
         /*
@@ -79,13 +86,13 @@ bool MD3ModelLoader::LoadFromFile(const char* fileName, Vertex_t** vertexData, G
             MD3::Vertex_t vertex;
             modelFile.read((char*)&vertex, sizeof(MD3::Vertex_t));
 
-            (*vertexData)[i].coord = glm::vec3(
+            vertexData[i].coord = glm::vec3(
                 vertex.x * MD3_SCALE,
                 vertex.y * MD3_SCALE,
                 vertex.z  *MD3_SCALE
             );
 
-            (*vertexData)[i].normal = DecodeNormal(vertex.n);
+            vertexData[i].normal = DecodeNormal(vertex.n);
         }
 
         // Read Texture coordinates
@@ -95,7 +102,7 @@ bool MD3ModelLoader::LoadFromFile(const char* fileName, Vertex_t** vertexData, G
             MD3::TexCoord_t texCoord;
             modelFile.read((char*)&texCoord, sizeof(MD3::TexCoord_t));
 
-            (*vertexData)[i].texCoord = glm::vec2(
+            vertexData[i].texCoord = glm::vec2(
                 texCoord.u,
                 texCoord.v
             );

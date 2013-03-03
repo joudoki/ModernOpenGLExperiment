@@ -85,7 +85,11 @@ public:
         glm::vec2 texCoord;
     } Vertex_t;
 
-    static bool LoadFromFile(const char* fileName, Vertex_t** vertexData, GLubyte** indexData);
+    static bool LoadFromFile(
+        const char* fileName,
+        Vertex_t*& vertexData, int& vertexCount,
+        GLushort*& indexData, int& triangleCount
+    );
 };
 
 #endif

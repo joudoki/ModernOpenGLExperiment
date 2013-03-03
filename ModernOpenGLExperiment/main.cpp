@@ -193,12 +193,34 @@ Mesh* MakeAxisMesh(Program* program, float r) {
 
     return mesh;
 }
+Mesh* MakeBoundingBox(Program* program) {
+    
+    return NULL;
+}
 
 Mesh* LoadMD3Mesh(Program* program, const char* fileName) {
     MD3ModelLoader::Vertex_t* vertexData = NULL;
-    GLubyte* indexData = NULL;
+    GLushort* indexData = NULL;
+    int vertexCount, triangleCount;
 
-    return NULL;
+    if (!MD3ModelLoader::LoadFromFile(fileName, vertexData, vertexCount, indexData, triangleCount))
+        return false;
+
+    GLsizei stride = 8*sizeof(GLfloat);
+    VertexAttributeBinding_t vertFmt[] = {
+        {program->GetAttributeID("coord"),  3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
+        {program->GetAttributeID("norm"),   3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))},
+        {program->GetAttributeID("tex"),    2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6*sizeof(GLfloat))}
+    };
+
+    Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 3);
+    mesh->SetVertexData(vertexCount, vertexCount*sizeof(MD3ModelLoader::Vertex_t), vertexData);
+    mesh->SetIndexData(UnsignedByteIndex, triangleCount*3, triangleCount*3*sizeof(GLushort), indexData);
+
+    delete[] vertexData;
+    delete[] indexData;
+
+    return mesh;
 }
 
 int main(int argc, char** argv) {
@@ -239,14 +261,14 @@ int main(int argc, char** argv) {
     // Setup objects
     Mesh* cube = MakeCubeMesh(textured);
     Mesh* axis = MakeAxisMesh(flatShade, 8.0f);
-    Mesh* ammoBox = LoadMD3Mesh(textured, "assets/rocketam.mdf");
+    Mesh* ammoBox = LoadMD3Mesh(textured, "assets/rocketam.md3");
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4(1.0f));
     
     glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
 
-    glm::mat4 viewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
+    glm::mat4 viewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -32.0f));
     glm::mat4 viewRotate = glm::mat4(1.0f);
 
     glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
@@ -280,7 +302,8 @@ int main(int argc, char** argv) {
 
             textured->Bind();
             glUniformMatrix4fv(textured->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(matrix));
-            cube->Render();
+            //cube->Render();
+            ammoBox->Render();
 
             glfwSwapBuffers();
 
