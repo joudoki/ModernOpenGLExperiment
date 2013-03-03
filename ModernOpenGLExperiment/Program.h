@@ -37,6 +37,8 @@ public:
     void Bind() const { glUseProgram(programHandle); }
 
     const Uniform_t* GetUniform(const std::string& name) const;
+    GLuint GetUniformID(const std::string& name) const;
+
     const VertexAttribute_t* GetAttribute(const std::string& attrName) const;
     GLuint GetAttributeID(const std::string& attrName) const;
 

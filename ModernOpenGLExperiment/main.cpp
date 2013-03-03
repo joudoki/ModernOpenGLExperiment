@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
     // Setup the program & shaders
     program->Bind();
 
-    GLuint uniformTransform = program->GetUniform("transform")->location;
+    GLuint uniformTransform = program->GetUniformID("transform");
     
     // Setup objects
     Mesh* cube = MakeCubeMesh(program);

@@ -62,6 +62,13 @@ const Uniform_t* Program::GetUniform(const std::string& uniformName) const {
         : &((*it).second);
 }
 
+GLuint Program::GetUniformID(const std::string& name) const {
+    const Uniform_t* uniform = GetUniform(name);
+    return uniform == NULL
+        ? 0
+        : uniform->location;
+}
+
 void Program::AcquireAttributes() {
     GLint activeAttributes, maxNameLength;
     glGetProgramiv(programHandle, GL_ACTIVE_ATTRIBUTES, &activeAttributes);
@@ -102,7 +109,7 @@ const VertexAttribute_t* Program::GetAttribute(const std::string& attrName) cons
 GLuint Program::GetAttributeID(const std::string& attrName) const {
     const VertexAttribute_t* attr = GetAttribute(attrName);
     return attr == NULL
-        ? -1
+        ? 0
         : attr->location;
 }
 
