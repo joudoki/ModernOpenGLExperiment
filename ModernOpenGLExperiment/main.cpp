@@ -76,13 +76,18 @@ void setupOpenGL() {
     glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 }
 
-std::string readFile(const char* fileName) {
-    std::ifstream in(fileName);
+string readFile(const char* fileName) {
+    ifstream in(fileName);
     if (!in) throw(errno);
-    return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+
+    string contents = string(istreambuf_iterator<char>(in), istreambuf_iterator<char>());
+
+    in.close();
+
+    return contents;
 }
 
-Program* MakeProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource) {
+Program* MakeProgram(const string& vertexShaderSource, const string& fragmentShaderSource) {
     Shader<VertexShader>* vertexShader = Shader<VertexShader>::CompileFromSource(vertexShaderSource);
     Shader<FragmentShader>* fragmentShader = Shader<FragmentShader>::CompileFromSource(fragmentShaderSource);
 
@@ -180,9 +185,50 @@ Mesh* MakeAxisMesh(Program* program, float r) {
     return mesh;
 }
 
+Mesh* FromMD3(const char* fileName) {
+    return NULL;
+}
+
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
+
+    ifstream modelFile("assets/rocket.md3", ios::binary);
+    if (!modelFile) throw (errno);
     
+    // Check magic and version
+    int version;
+    char magic[5] = {0};
+
+    modelFile.read(magic, 4*sizeof(char));
+    modelFile.read((char*)&version, sizeof(int));
+
+    if (strcmp(magic, "IDP3") != 0 || version != 15) {
+        printf("Got unexpected file format \"%s\" v%d, expecting \"IDP3\" v15\n", magic, version);
+        return EXIT_FAILURE;
+    }
+
+    struct {
+        char name[64];
+        int flags;
+
+        int numFrmes;
+        int numTag;
+        int numSurfaces;
+        int numSkins;
+
+        int offsetFrames;
+        int offsetTags;
+        int offsetSurfaces;
+        int offsetEOF;
+    } header;
+
+    modelFile.read((char*)&header, sizeof(header));
+
+    modelFile.close();
+
+
+    return EXIT_SUCCESS;
+
     int width = 800, height = 600;
     if (!acquireContext(width, height)) return EXIT_FAILURE;
     if (!acquireFunctions()) return EXIT_FAILURE;
