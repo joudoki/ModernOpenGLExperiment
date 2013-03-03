@@ -3,15 +3,17 @@
 
 #include "Rendering.h"
 
-class BoundingBox
-{
-private:
+class BoundingBox {
+public:
     glm::vec3 min;
     glm::vec3 max;
 
-public:
-    BoundingBox();
-    ~BoundingBox();
+    BoundingBox() {};
+    BoundingBox(glm::vec3 min, glm::vec3 max) : min(min), max(max) {}
+
+    // Determine the transform to use to render
+    // a mesh that's defined on [-1,-1,-1],[1,1,1]
+    glm::mat4 GetTransform() const;
 };
 
 #endif

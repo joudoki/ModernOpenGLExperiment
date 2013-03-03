@@ -17,7 +17,7 @@ namespace MD3 {
         char name[MD3_MAX_QPATH];
         int flags;
 
-        int numFrmes;
+        int numFrames;
         int numTag;
         int numSurfaces;
         int numSkins;
@@ -27,6 +27,14 @@ namespace MD3 {
         int offsetSurfaces;
         int offsetEOF;
     } Header_t;
+
+    typedef struct {
+        glm::vec3 minBounds;
+        glm::vec3 maxBounds;
+        glm::vec3 localOrigin;
+        float radius;
+        char name[16];
+    } Frame_t;
 
     typedef struct {
         int magic;
@@ -80,8 +88,11 @@ private:
     std::vector<MD3::Surface_t> surfaces;
     std::vector<int> surfaceOffsets;
 
-    MD3Model(const char* fileName);
+    std::vector<MD3::Frame_t> frames;
 
+    MD3Model(const char* fileName);
+    
+    void ReadFrames();
     void ReadSurfaces();
 
     static glm::vec3 DecodeNormal(short index);

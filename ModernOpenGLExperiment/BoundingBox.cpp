@@ -1,11 +1,5 @@
 #include "BoundingBox.h"
 
-
-BoundingBox::BoundingBox(void)
-{
-}
-
-
-BoundingBox::~BoundingBox(void)
-{
+glm::mat4 BoundingBox::GetTransform() const {
+    return glm::mat4();
 }

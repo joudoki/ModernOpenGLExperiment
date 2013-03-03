@@ -53,8 +53,23 @@ MD3Model* MD3Model::LoadFromFile(const char* fileName) {
 
     // Read surfaces
     model->ReadSurfaces();
+    
+    // Read frames
+    model->ReadFrames();
 
     return model;
+}
+
+void MD3Model::ReadFrames() {
+    // Frames are of fixed length and are sequential
+    modelFile.seekg(header.offsetFrames);
+
+    for (int i=0; i<header.numFrames; ++i) {
+        MD3::Frame_t frame;
+        modelFile.read((char*)&frame, sizeof(MD3::Frame_t));
+
+        frames.push_back(frame);
+    }
 }
 
 void MD3Model::ReadSurfaces() {
@@ -141,6 +156,9 @@ void MD3Model::GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount)
     }
 }
 
-BoundingBox GetFrame(size_t i) {
-    return BoundingBox();
+BoundingBox MD3Model::GetFrame(size_t i) {
+    assert(i < header.numFrames);
+
+    MD3::Frame_t frame = frames[i];
+    return BoundingBox(frame.minBounds, frame.maxBounds);
 }
