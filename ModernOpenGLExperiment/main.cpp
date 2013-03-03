@@ -123,14 +123,14 @@ Program* MakeProgram(const std::string& vertexShaderSource, const std::string& f
 
 Mesh* MakeCubeMesh(Program* program) {
     float data[] = {
-        -1.0f, -1.0f, -1.0f,     0.5f, 0.5f, 0.5f,
-        -1.0f, -1.0f,  1.0f,     0.0f, 0.0f, 1.0f,
-        -1.0f,  1.0f, -1.0f,     0.0f, 1.0f, 0.0f,
-        -1.0f,  1.0f,  1.0f,     0.0f, 1.0f, 1.0f,
-         1.0f, -1.0f, -1.0f,     1.0f, 0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f,     1.0f, 0.0f, 1.0f,
-         1.0f,  1.0f, -1.0f,     1.0f, 1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f,     1.0f, 1.0f, 1.0f
+        -1.0f, -1.0f, -1.0f,     0.0f, 0.0f,
+        -1.0f, -1.0f,  1.0f,     0.0f, 1.0f,
+        -1.0f,  1.0f, -1.0f,     1.0f, 0.0f,
+        -1.0f,  1.0f,  1.0f,     1.0f, 1.0f,
+         1.0f, -1.0f, -1.0f,     0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f,     0.0f, 1.0f,
+         1.0f,  1.0f, -1.0f,     1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f,     1.0f, 1.0f
     };
 
     GLubyte indices[] = {
@@ -142,9 +142,10 @@ Mesh* MakeCubeMesh(Program* program) {
         4,0,1, 1,5,4
     };
 
+    GLsizei stride = 5*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
-        {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
-        {program->GetAttributeID("color"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+        {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
+        {program->GetAttributeID("tex"),   2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))}
     };
 
     Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 2);
@@ -166,10 +167,11 @@ Mesh* MakeAxisMesh(Program* program, float r) {
         2, 0,
         3, 0
     };
-
+    
+    GLsizei stride = 6*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
-        {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
-        {program->GetAttributeID("color"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+        {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
+        {program->GetAttributeID("color"), 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))}
     };
 
     Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 2);
@@ -203,18 +205,13 @@ int main(int argc, char** argv) {
         readFile("glsl/textured.frag")
     );
 
-    if (flatShade == NULL) {
+    if (flatShade == NULL || textured == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    // Setup the program & shaders
-    flatShade->Bind();
-
-    GLuint uniformTransform = flatShade->GetUniformID("transform");
-    
     // Setup objects
-    Mesh* cube = MakeCubeMesh(flatShade);
+    Mesh* cube = MakeCubeMesh(textured);
     Mesh* axis = MakeAxisMesh(flatShade, 8.0f);
 
     // Setup trackball interface
@@ -250,16 +247,15 @@ int main(int argc, char** argv) {
             // Update the transformation matrix
             viewRotate = trackball.GetRotationMatrix();
             glm::mat4 matrix = project * viewTranslate * viewRotate * model;
-
-            glUniformMatrix4fv(
-                uniformTransform,
-                1,          // Count
-                GL_FALSE,   // Do not transpose
-                glm::value_ptr(matrix)
-            );
-
+            
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            
+            flatShade->Bind();
+            glUniformMatrix4fv(flatShade->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(matrix));
             axis->Render();
+
+            textured->Bind();
+            glUniformMatrix4fv(textured->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(matrix));
             cube->Render();
 
             glfwSwapBuffers();
