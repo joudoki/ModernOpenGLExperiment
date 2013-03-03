@@ -167,12 +167,12 @@ Mesh* MakeCubeMesh(Program* program) {
 
     return mesh;
 }
-Mesh* MakeAxisMesh(Program* program, float r) {
+Mesh* MakeAxisMesh(Program* program) {
     float data[] = {
         0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,
-        r,    0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-        0.0f, r,    0.0f,   0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, r,      0.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f,
     };
 
     GLubyte indices[] = {
@@ -189,7 +189,7 @@ Mesh* MakeAxisMesh(Program* program, float r) {
 
     Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 2);
     mesh->SetVertexData(8, sizeof(data), data);
-    mesh->SetIndexData(UnsignedByteIndex, 36, sizeof(indices), indices);
+    mesh->SetIndexData(UnsignedByteIndex, 6, sizeof(indices), indices);
 
     return mesh;
 }
@@ -223,20 +223,32 @@ Mesh* LoadMD3Mesh(Program* program, const char* fileName) {
     return mesh;
 }
 
-int main(int argc, char** argv) {
-    printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
+void setup(int width, int height) {
+    printf("GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
 
-    int width = 800, height = 600;
-    if (!acquireContext(width, height)) return EXIT_FAILURE;
-    if (!acquireFunctions()) return EXIT_FAILURE;
+    if (!acquireContext(width, height)) exit(EXIT_FAILURE);
+    if (!acquireFunctions()) exit(EXIT_FAILURE);
     
     setupOpenGL();
 
+    // Print some info about OpenGL
     printf("\nOpenGL:\n");
     printf("  [GL_VENDOR]:     %s;\n", glGetString(GL_VENDOR));
     printf("  [GL_RENDERER]:   %s;\n", glGetString(GL_RENDERER));
     printf("  [GL_VERSION]:    %s;\n", glGetString(GL_VERSION));
+}
 
+int main(int argc, char** argv) {
+    int width = 800, height = 600;
+    float cameraDistance = 32.0f;
+
+    setup(width, height);
+
+    // Load textures
+    Texture* tex = Texture::LoadFromFile("assets/rockammo2.tga");
+    tex->Bind(0);
+
+    // Load shaders
     Program* flatShade = MakeProgram(
         readFile("glsl/flatShade.vert"),
         readFile("glsl/flatShade.frag")
@@ -247,29 +259,26 @@ int main(int argc, char** argv) {
         readFile("glsl/textured.frag")
     );
 
-    Texture* tex = Texture::LoadFromFile("assets/rockammo2.tga");
-    tex->Bind(0);
-
-    textured->Bind();
-    glUniform1i(textured->GetUniformID("tex"), 0);
-
     if (flatShade == NULL || textured == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
+    // Setup uniforms that are constant over lifetime of shader
+    textured->Bind();
+    glUniform1i(textured->GetUniformID("tex"), 0);
+
     // Setup objects
-    Mesh* cube = MakeCubeMesh(textured);
-    Mesh* axis = MakeAxisMesh(flatShade, 8.0f);
+    Mesh* axis = MakeAxisMesh(flatShade);
     Mesh* ammoBox = LoadMD3Mesh(textured, "assets/rocketam.md3");
 
     // Setup trackball interface
-    Trackball trackball(width, height, 1.0f, glm::mat4(1.0f));
+    Trackball trackball(width, height, 1.0f, glm::mat4());
     
-    glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.125f));
+    glm::mat4 model = glm::scale(glm::mat4(), glm::vec3(16.0f));
 
-    glm::mat4 viewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -32.0f));
-    glm::mat4 viewRotate = glm::mat4(1.0f);
+    glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -cameraDistance));
+    glm::mat4 viewRotate = glm::mat4();
 
     glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 128.0f);
 
@@ -292,32 +301,33 @@ int main(int argc, char** argv) {
         if (time - lastTime >= 1/60.0f) {
             // Update the transformation matrix
             viewRotate = trackball.GetRotationMatrix();
-            glm::mat4 matrix = project * viewTranslate * viewRotate * model;
+            glm::mat4 viewClip = project * viewTranslate * viewRotate;
             
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
+            // Render axis
             flatShade->Bind();
-            glUniformMatrix4fv(flatShade->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(matrix));
+            glUniformMatrix4fv(flatShade->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(viewClip * model));
             axis->Render();
 
+            // Render model
             textured->Bind();
-            glUniformMatrix4fv(textured->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(matrix));
-            //cube->Render();
+            glUniformMatrix4fv(textured->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(viewClip));
             ammoBox->Render();
 
             glfwSwapBuffers();
-
             lastTime = time;
         }
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
-    delete cube;
     delete axis;
+    delete ammoBox;
+
     delete flatShade;
     delete textured;
+
     delete tex;
-    delete ammoBox;
     
     glfwTerminate();
     return EXIT_SUCCESS;
