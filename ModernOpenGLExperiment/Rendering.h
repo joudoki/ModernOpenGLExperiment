@@ -45,6 +45,10 @@ enum PrimitiveType {
     TrianglesPrimitive = GL_TRIANGLES
 };
 
+enum TextureType {
+    Texture2D = GL_TEXTURE_2D
+};
+
 /**
  * Uniform_t - Simple data structure holding information about a Uniform in a Shader/Program.
  */
