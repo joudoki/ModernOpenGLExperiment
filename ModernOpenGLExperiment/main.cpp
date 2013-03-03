@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
 
     // Load textures
     Texture* tex = Texture::LoadFromFile("assets/rockammo2.tga");
-    tex->Bind(0);
+    Texture::Bind(0, tex);
 
     // Load shaders
     Program* flatShade = MakeProgram(

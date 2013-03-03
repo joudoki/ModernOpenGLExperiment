@@ -18,16 +18,16 @@ private:
 public:
     static Texture* LoadFromFile(const char* filename);
 
+    /**
+     * Binds the given texture to the specified texture unit
+     */
+    static void Bind(GLuint i, Texture* texture);
+
     ~Texture() { 
         glDeleteTextures(1, &id);
     }
 
     void Bind() const {
-        glBindTexture(GL_TEXTURE_2D, id);
-    }
-
-    void Bind(GLuint texUnit) const {
-        glActiveTexture(GL_TEXTURE0 + texUnit);
         glBindTexture(GL_TEXTURE_2D, id);
     }
 

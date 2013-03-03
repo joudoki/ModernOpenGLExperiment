@@ -1,5 +1,12 @@
 #include "Texture.h"
 
+void Texture::Bind(GLuint i, Texture* texture) {
+    assert(texture != NULL);
+
+    glActiveTexture(GL_TEXTURE0 + i);
+    glBindTexture(GL_TEXTURE_2D, texture->id);
+}
+
 void Texture::SetFilters(GLenum magFilter, GLenum minFilter) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); 
