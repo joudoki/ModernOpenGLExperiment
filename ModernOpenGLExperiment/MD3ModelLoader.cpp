@@ -53,13 +53,12 @@ Mesh* MD3ModelLoader::LoadFromFile(const char* fileName) {
         }
 
         // Read Texture coordinates
-        /*
         modelFile.seekg(surfaceOffset + surface.offsetTexCoords);
 
         for (int i=0; i<surface.numVerts; ++i) {
-
+            MD3::TexCoord_t texCoord;
+            modelFile.read((char*)&texCoord, sizeof(MD3::TexCoord_t));
         }
-        */
 
         surfaceOffset += surface.offsetEnd;
     }

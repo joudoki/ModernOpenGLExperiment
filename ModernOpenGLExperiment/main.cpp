@@ -128,16 +128,23 @@ Program* MakeProgram(const string& vertexShaderSource, const string& fragmentSha
 }
 
 Mesh* MakeCubeMesh(Program* program) {
-    float data[] = {
-        -1.0f, -1.0f, -1.0f,     0.0f, 0.0f,
-        -1.0f, -1.0f,  1.0f,     0.0f, 1.0f,
-        -1.0f,  1.0f, -1.0f,     1.0f, 0.0f,
-        -1.0f,  1.0f,  1.0f,     1.0f, 1.0f,
-         1.0f, -1.0f, -1.0f,     0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f,     0.0f, 1.0f,
-         1.0f,  1.0f, -1.0f,     1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f,     1.0f, 1.0f
+#define COORD(x,y,z,u,v) {glm::vec3(x,y,z), glm::vec2(u,v)}
+
+    struct {
+        glm::vec3 coord;
+        glm::vec2 tex;
+    } data[] = {
+        COORD(-1.0f, -1.0f, -1.0f, 0.0f, 0.0f),
+        COORD(-1.0f, -1.0f,  1.0f, 0.0f, 1.0f),
+        COORD(-1.0f,  1.0f, -1.0f, 1.0f, 0.0f),
+        COORD(-1.0f,  1.0f,  1.0f, 1.0f, 1.0f),
+        COORD( 1.0f, -1.0f, -1.0f, 0.0f, 0.0f),
+        COORD( 1.0f, -1.0f,  1.0f, 0.0f, 1.0f),
+        COORD( 1.0f,  1.0f, -1.0f, 1.0f, 0.0f),
+        COORD( 1.0f,  1.0f,  1.0f, 1.0f, 1.0f)
     };
+
+#undef COORD
 
     GLubyte indices[] = {
         2,3,1, 0,2,1,
@@ -190,9 +197,8 @@ Mesh* MakeAxisMesh(Program* program, float r) {
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
 
-    Mesh* mdf3Mesh = MD3ModelLoader::LoadFromFile("assets/rocketam.md3");
-
-    return EXIT_SUCCESS;
+    //Mesh* mdf3Mesh = MD3ModelLoader::LoadFromFile("assets/rocketam.md3");
+    //return EXIT_SUCCESS;
 
     int width = 800, height = 600;
     if (!acquireContext(width, height)) return EXIT_FAILURE;

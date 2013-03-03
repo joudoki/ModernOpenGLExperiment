@@ -67,6 +67,19 @@ namespace MD3 {
         short z;
         short n;
     } Vertex_t;
+
+    typedef struct {
+        float x;
+        float y;
+        float z;
+
+        float nx;
+        float ny;
+        float nz;
+
+        float tu;
+        float tv;
+    } MD3Vertex_t;
 };
 
 class MD3ModelLoader
