@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "Program.h"
 #include "Mesh.h"
+#include "Texture.h"
 
 #include "Trackball.h"
 
@@ -205,6 +206,12 @@ int main(int argc, char** argv) {
         readFile("glsl/textured.frag")
     );
 
+    glActiveTexture(GL_TEXTURE0);
+    Texture* tex = Texture::LoadFromFile("assets/rockammo2.tga");
+
+    textured->Bind();
+    glUniform1i(textured->GetUniformID("tex"), 0);
+
     if (flatShade == NULL || textured == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
@@ -230,9 +237,6 @@ int main(int argc, char** argv) {
         time = (float) glfwGetTime();
 
         glfwPollEvents();
-
-        //float x = 1.5f * glm::cos(time), z = 1.5f * glm::sin(time);
-        //glm::mat4 view = glm::lookAt(glm::vec3(x, 1.5f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         // Update trackball state
         int mouseX, mouseY;
@@ -269,6 +273,7 @@ int main(int argc, char** argv) {
     delete axis;
     delete flatShade;
     delete textured;
+    delete tex;
     
     glfwTerminate();
     return EXIT_SUCCESS;
