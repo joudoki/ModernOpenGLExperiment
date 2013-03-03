@@ -202,8 +202,8 @@ int main(int argc, char** argv) {
     printf("  [GL_VERSION]:    %s;\n", glGetString(GL_VERSION));
 
     Program* program = MakeProgram(
-        readFile("glsl/one.v.glsl"),
-        readFile("glsl/one.f.glsl")
+        readFile("glsl/one.vert"),
+        readFile("glsl/one.frag")
     );
 
     if (program == NULL) {
