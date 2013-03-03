@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
 
     // Setup uniforms that are constant over lifetime of shader
     textured->Bind();
-    glUniform1i(textured->GetUniformID("tex"), 0);
+    Program::SetUniform(textured->GetUniform("tex"), 0);
 
     // Setup objects
     Mesh* axis = MakeAxisMesh(flatShade);
@@ -307,12 +307,12 @@ int main(int argc, char** argv) {
             
             // Render axis
             flatShade->Bind();
-            glUniformMatrix4fv(flatShade->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(viewClip * model));
+            Program::SetUniform(flatShade->GetUniform("transform"), viewClip * model);
             axis->Render();
 
             // Render model
             textured->Bind();
-            glUniformMatrix4fv(textured->GetUniformID("transform"), 1, GL_FALSE, glm::value_ptr(viewClip));
+            Program::SetUniform(textured->GetUniform("transform"), viewClip);
             ammoBox->Render();
 
             glfwSwapBuffers();

@@ -26,6 +26,10 @@ private:
     void AcquireUniforms();
     void AcquireAttributes();
 
+    // The only thing that really matters about this is that the location will be 0
+    // (Which the default constructor will do for us)
+    static const Uniform_t DEFAULT_UNIFORM;
+
 public:
     static Program* CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader);
 
@@ -36,14 +40,19 @@ public:
     bool IsValid() const { return programHandle != 0 && linkResult == GL_TRUE; }
     void Bind() const { glUseProgram(programHandle); }
 
-    const Uniform_t* GetUniform(const std::string& name) const;
+    Uniform_t const * GetUniform(const std::string& name) const;
     GLuint GetUniformID(const std::string& name) const;
 
-    const VertexAttribute_t* GetAttribute(const std::string& attrName) const;
+    VertexAttribute_t const * GetAttribute(const std::string& attrName) const;
     GLuint GetAttributeID(const std::string& attrName) const;
 
-    //void setUniform(Uniform_t* uniform, void* value);
+    static void SetUniform(Uniform_t const * uniform, float value) {
+        glUniform1f(uniform->location, value);
+    }
 
+    static void SetUniform(Uniform_t const * uniform, const glm::mat4& value) {
+        glUniformMatrix4fv(uniform->location, 1, GL_FALSE, glm::value_ptr(value));
+    }
 };
 
 #endif

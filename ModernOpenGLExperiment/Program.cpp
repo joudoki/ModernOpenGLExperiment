@@ -1,20 +1,10 @@
 #include "Program.h"
 
+const Uniform_t Program::DEFAULT_UNIFORM;
+
 Program::~Program() {
     glDeleteProgram(programHandle);
     programHandle = 0;
-
-    /*
-    if (uniforms != NULL) {
-        delete[] uniforms;
-        uniforms = NULL;
-    }
-
-    if (attributes != NULL) {
-        delete[] attributes;
-        attributes = NULL;
-    }
-    */
 }
 
 void Program::Link() {
@@ -55,18 +45,16 @@ void Program::AcquireUniforms() {
 }
 
 const Uniform_t* Program::GetUniform(const std::string& uniformName) const {
-    auto it = uniforms.find(uniformName);
+    std::map<std::string, Uniform_t>::const_iterator it = uniforms.find(uniformName);
     
-    return (it == uniforms.end())
-        ? NULL
-        : &((*it).second);
+    return it == uniforms.end()
+        ? &DEFAULT_UNIFORM
+        : &(it->second);
 }
 
 GLuint Program::GetUniformID(const std::string& name) const {
     const Uniform_t* uniform = GetUniform(name);
-    return uniform == NULL
-        ? 0
-        : uniform->location;
+    return uniform->location;
 }
 
 void Program::AcquireAttributes() {
