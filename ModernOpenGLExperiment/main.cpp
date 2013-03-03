@@ -193,9 +193,35 @@ Mesh* MakeAxisMesh(Program* program) {
 
     return mesh;
 }
-Mesh* MakeBoundingBox(Program* program) {
-    
-    return NULL;
+Mesh* MakeAABBMesh(Program* program) {
+    float data[] = {
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f
+    };
+
+    GLubyte indices[] = {
+        0,1, 0,2, 0,4,
+        1,3, 1,5, 2,3, 
+        2,6, 3,7, 4,5,
+        4,6, 5,7, 6,7
+    };
+
+    GLsizei stride = 3*sizeof(GLfloat);
+    VertexAttributeBinding_t vertFmt[] = {
+        {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)}
+    };
+
+    Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 1);
+    mesh->SetVertexData(8, sizeof(data), data);
+    mesh->SetIndexData(UnsignedByteIndex, 24, sizeof(indices), indices);
+
+    return mesh;
 }
 
 Mesh* LoadMD3Mesh(Program* program, const char* fileName) {
@@ -270,12 +296,15 @@ int main(int argc, char** argv) {
 
     // Setup objects
     Mesh* axis = MakeAxisMesh(flatShade);
+    Mesh* aabb = MakeAABBMesh(flatShade);
+
     Mesh* ammoBox = LoadMD3Mesh(textured, "assets/rocketam.md3");
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
     
-    glm::mat4 model = glm::scale(glm::mat4(), glm::vec3(16.0f));
+    glm::mat4 axisModel = glm::scale(glm::mat4(), glm::vec3(16.0f));
+    glm::mat4 aabbModel = glm::scale(glm::mat4(), glm::vec3(4.0f));
 
     glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -cameraDistance));
     glm::mat4 viewRotate = glm::mat4();
@@ -307,8 +336,11 @@ int main(int argc, char** argv) {
             
             // Render axis
             flatShade->Bind();
-            Program::SetUniform(flatShade->GetUniform("transform"), viewClip * model);
+            Program::SetUniform(flatShade->GetUniform("transform"), viewClip * axisModel);
             axis->Render();
+
+            Program::SetUniform(flatShade->GetUniform("transform"), viewClip * aabbModel);
+            aabb->Render();
 
             // Render model
             textured->Bind();
@@ -322,6 +354,7 @@ int main(int argc, char** argv) {
 
     // Cleanup
     delete axis;
+    delete aabb;
     delete ammoBox;
 
     delete flatShade;
