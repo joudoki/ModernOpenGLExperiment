@@ -67,19 +67,6 @@ namespace MD3 {
         short z;
         short n;
     } Vertex_t;
-
-    typedef struct {
-        float x;
-        float y;
-        float z;
-
-        float nx;
-        float ny;
-        float nz;
-
-        float tu;
-        float tv;
-    } MD3Vertex_t;
 };
 
 class MD3ModelLoader
@@ -88,8 +75,17 @@ private:
     MD3ModelLoader() {};
     ~MD3ModelLoader() {};
 
+    static glm::vec3 DecodeNormal(short index);
+
 public:
-    static Mesh* LoadFromFile(const char* fileName);
+    // Final format of the loading
+    typedef struct {
+        glm::vec3 coord;
+        glm::vec3 normal;
+        glm::vec2 texCoord;
+    } Vertex_t;
+
+    static bool LoadFromFile(const char* fileName, Vertex_t** vertexData, GLubyte** indexData);
 };
 
 #endif

@@ -18,7 +18,9 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="MD3ModelLoader.cpp" />
+    <ClCompile Include="MD3ModelLoader.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl_core_3_3.h" />
@@ -43,7 +45,9 @@
     <ClInclude Include="Texture.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="MD3ModelLoader.h" />
+    <ClInclude Include="MD3ModelLoader.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Rendering">

@@ -194,11 +194,15 @@ Mesh* MakeAxisMesh(Program* program, float r) {
     return mesh;
 }
 
+Mesh* LoadMD3Mesh(Program* program, const char* fileName) {
+    MD3ModelLoader::Vertex_t* vertexData = NULL;
+    GLubyte* indexData = NULL;
+
+    return NULL;
+}
+
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
-
-    //Mesh* mdf3Mesh = MD3ModelLoader::LoadFromFile("assets/rocketam.md3");
-    //return EXIT_SUCCESS;
 
     int width = 800, height = 600;
     if (!acquireContext(width, height)) return EXIT_FAILURE;
@@ -235,6 +239,7 @@ int main(int argc, char** argv) {
     // Setup objects
     Mesh* cube = MakeCubeMesh(textured);
     Mesh* axis = MakeAxisMesh(flatShade, 8.0f);
+    Mesh* ammoBox = LoadMD3Mesh(textured, "assets/rocketam.mdf");
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4(1.0f));
@@ -289,6 +294,7 @@ int main(int argc, char** argv) {
     delete flatShade;
     delete textured;
     delete tex;
+    delete ammoBox;
     
     glfwTerminate();
     return EXIT_SUCCESS;
