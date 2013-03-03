@@ -122,16 +122,6 @@ Program* MakeProgram(const std::string& vertexShaderSource, const std::string& f
 }
 
 Mesh* MakeCubeMesh(Program* program) {
-    GLuint attrCoord = program->GetAttributeID("vCoord");
-    GLuint attrColor = program->GetAttributeID("vColor");
-
-    VertexAttributeBinding_t vertFmt[] = {
-        {attrCoord, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
-        {attrColor, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
-    };
-
-    Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 2);
-    
     float data[] = {
         -1.0f, -1.0f, -1.0f,     0.5f, 0.5f, 0.5f,
         -1.0f, -1.0f,  1.0f,     0.0f, 0.0f, 1.0f,
@@ -152,22 +142,18 @@ Mesh* MakeCubeMesh(Program* program) {
         4,0,1, 1,5,4
     };
 
+    VertexAttributeBinding_t vertFmt[] = {
+        {program->GetAttributeID("vCoord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
+        {program->GetAttributeID("vColor"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+    };
+
+    Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 2);
     mesh->SetVertexData(8, sizeof(data), data);
     mesh->SetIndexData(UnsignedByteIndex, 36, sizeof(indices), indices);
 
     return mesh;
 }
 Mesh* MakeAxisMesh(Program* program, float r) {
-    GLuint attrCoord = program->GetAttributeID("vCoord");
-    GLuint attrColor = program->GetAttributeID("vColor");
-
-    VertexAttributeBinding_t vertFmt[] = {
-        {attrCoord, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
-        {attrColor, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
-    };
-
-    Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 2);
-    
     float data[] = {
         0.0f, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f,
         r,    0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
@@ -181,6 +167,12 @@ Mesh* MakeAxisMesh(Program* program, float r) {
         3, 0
     };
 
+    VertexAttributeBinding_t vertFmt[] = {
+        {program->GetAttributeID("vCoord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
+        {program->GetAttributeID("vColor"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+    };
+
+    Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 2);
     mesh->SetVertexData(8, sizeof(data), data);
     mesh->SetIndexData(UnsignedByteIndex, 36, sizeof(indices), indices);
 
@@ -266,6 +258,8 @@ int main(int argc, char** argv) {
             cube->Render();
 
             glfwSwapBuffers();
+
+            lastTime = time;
         }
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
