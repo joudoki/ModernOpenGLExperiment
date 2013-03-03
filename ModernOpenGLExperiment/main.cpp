@@ -67,8 +67,8 @@ void setupOpenGL() {
 
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_FRONT);
 
     // Setup windowing transform
     glViewport(0, 0, 800, 600);
@@ -224,14 +224,10 @@ Mesh* MakeAABBMesh(Program* program) {
     return mesh;
 }
 
-Mesh* LoadMD3Mesh(Program* program, const char* fileName) {
+Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
     MD3Model::Vertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
     size_t vertexCount, triangleCount;
-
-    MD3Model* model = MD3Model::LoadFromFile(fileName);
-    if (model == NULL)
-        return false;
 
     model->GetVertices(0, vertexData, vertexCount);
     model->GetIndices(0, indexData, triangleCount);
@@ -270,7 +266,7 @@ void setup(int width, int height) {
 
 int main(int argc, char** argv) {
     int width = 800, height = 600;
-    float cameraDistance = 32.0f;
+    float cameraDistance = 64.0f;
 
     setup(width, height);
 
@@ -300,15 +296,24 @@ int main(int argc, char** argv) {
 
     // Setup objects
     Mesh* axis = MakeAxisMesh(flatShade);
-    Mesh* aabb = MakeAABBMesh(flatShade);
+    glm::mat4 axisModel = glm::scale(glm::mat4(), glm::vec3(16.0f));
 
-    Mesh* ammoBox = LoadMD3Mesh(textured, "assets/rocketam.md3");
+    MD3Model* model = MD3Model::LoadFromFile("assets/rocketam.md3");
+    if (model == NULL) {
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
+
+    Mesh* ammoBox = LoadMD3Mesh(textured, model);
+
+    Mesh* aabb = MakeAABBMesh(flatShade);
+    glm::mat4 aabbModel = model->GetFrame(0).GetTransform();
+
+    delete model;
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
     
-    glm::mat4 axisModel = glm::scale(glm::mat4(), glm::vec3(16.0f));
-    glm::mat4 aabbModel = glm::scale(glm::mat4(), glm::vec3(4.0f));
 
     glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -cameraDistance));
     glm::mat4 viewRotate = glm::mat4();
