@@ -8,7 +8,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 
-#include "MD3ModelLoader.h"
+#include "MD3Model.h"
 
 #include "Trackball.h"
 
@@ -225,12 +225,16 @@ Mesh* MakeAABBMesh(Program* program) {
 }
 
 Mesh* LoadMD3Mesh(Program* program, const char* fileName) {
-    MD3ModelLoader::Vertex_t* vertexData = NULL;
+    MD3Model::Vertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
-    int vertexCount, triangleCount;
+    size_t vertexCount, triangleCount;
 
-    if (!MD3ModelLoader::LoadFromFile(fileName, vertexData, vertexCount, indexData, triangleCount))
+    MD3Model* model = MD3Model::LoadFromFile(fileName);
+    if (model == NULL)
         return false;
+
+    model->GetVertices(0, vertexData, vertexCount);
+    model->GetIndices(0, indexData, triangleCount);
 
     GLsizei stride = 8*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
@@ -240,7 +244,7 @@ Mesh* LoadMD3Mesh(Program* program, const char* fileName) {
     };
 
     Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 3);
-    mesh->SetVertexData(vertexCount, vertexCount*sizeof(MD3ModelLoader::Vertex_t), vertexData);
+    mesh->SetVertexData(vertexCount, vertexCount*sizeof(MD3Model::Vertex_t), vertexData);
     mesh->SetIndexData(UnsignedByteIndex, triangleCount*3, triangleCount*3*sizeof(GLushort), indexData);
 
     delete[] vertexData;

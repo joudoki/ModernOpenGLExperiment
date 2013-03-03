@@ -1,8 +1,10 @@
-#ifndef MD3MODELLOADER_H
-#define MD3MODELLOADER_H
+#ifndef MD3MODEL_H
+#define MD3MODEL_H
 
 #include <fstream>
+#include <vector>
 
+#include "BoundingBox.h"
 #include "Rendering.h"
 #include "Mesh.h"
 
@@ -69,15 +71,24 @@ namespace MD3 {
     } Vertex_t;
 };
 
-class MD3ModelLoader
+class MD3Model
 {
 private:
-    MD3ModelLoader() {};
-    ~MD3ModelLoader() {};
+    std::ifstream modelFile;
+    MD3::Header_t header;
+
+    std::vector<MD3::Surface_t> surfaces;
+    std::vector<int> surfaceOffsets;
+
+    MD3Model(const char* fileName);
+
+    void ReadSurfaces();
 
     static glm::vec3 DecodeNormal(short index);
 
 public:
+    ~MD3Model();
+
     // Final format of the loading
     typedef struct {
         glm::vec3 coord;
@@ -85,11 +96,13 @@ public:
         glm::vec2 texCoord;
     } Vertex_t;
 
-    static bool LoadFromFile(
-        const char* fileName,
-        Vertex_t*& vertexData, int& vertexCount,
-        GLushort*& indexData, int& triangleCount
-    );
+    static MD3Model* LoadFromFile(const char* fileName);
+
+    size_t GetSurfaceCount() const { return header.numSurfaces; }
+
+    void GetVertices(size_t i, Vertex_t*& vertexData, size_t& vertexCount);
+    void GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount);
+    BoundingBox GetFrame(size_t i);
 };
 
 #endif

@@ -66,9 +66,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="gl_core_3_3.c" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MD3ModelLoader.cpp" />
+    <ClCompile Include="MD3Model.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Program.cpp" />
@@ -76,8 +77,9 @@
     <ClCompile Include="Trackball.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="gl_core_3_3.h" />
-    <ClInclude Include="MD3ModelLoader.h" />
+    <ClInclude Include="MD3Model.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Program.h" />

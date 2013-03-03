@@ -18,7 +18,10 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="MD3ModelLoader.cpp">
+    <ClCompile Include="BoundingBox.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="MD3Model.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,7 +48,10 @@
     <ClInclude Include="Texture.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="MD3ModelLoader.h">
+    <ClInclude Include="BoundingBox.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="MD3Model.h">
       <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
@@ -61,6 +67,9 @@
     </Filter>
     <Filter Include="Utility">
       <UniqueIdentifier>{278a99d2-84ac-4587-a3fd-948cae4d88c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{a54236b6-ba52-4a02-88b6-21cdd7a54d33}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
