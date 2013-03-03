@@ -2,12 +2,12 @@
 
 uniform mat4 transform;
 
-in vec3 vCoord;
-in vec3 vColor;
+in vec3 coord;
+in vec2 tex;
 
-flat out vec3 fColor;
+out vec2 fTex;
 
 void main(void) {
-    gl_Position = transform * vec4(vCoord, 1.0);
-    fColor = vColor;
+    gl_Position = transform * vec4(coord, 1.0);
+    fTex = tex;
 }
