@@ -18,6 +18,7 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="MD3ModelLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl_core_3_3.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="Texture.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="MD3ModelLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Rendering">
@@ -52,6 +54,9 @@
     </Filter>
     <Filter Include="GLSL">
       <UniqueIdentifier>{786851dd-c1c7-4ea3-9e3f-525f96389748}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{278a99d2-84ac-4587-a3fd-948cae4d88c1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,8 @@
 #include "Mesh.h"
 #include "Texture.h"
 
+#include "MD3ModelLoader.h"
+
 #include "Trackball.h"
 
 #include <iostream>
@@ -61,7 +63,7 @@ int acquireFunctions() {
 }
 
 void setupOpenGL() {
-    glClearColor(0.9, 0.9, 0.9, 1.0);
+    glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
 
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
@@ -185,140 +187,10 @@ Mesh* MakeAxisMesh(Program* program, float r) {
     return mesh;
 }
 
-#define MD3_MAGIC "IDP3"
-#define MD3_VERSION 15
-#define MD3_MAX_QPATH 64
-
-typedef struct {
-    char name[MD3_MAX_QPATH];
-    int flags;
-
-    int numFrmes;
-    int numTag;
-    int numSurfaces;
-    int numSkins;
-
-    int offsetFrames;
-    int offsetTags;
-    int offsetSurfaces;
-    int offsetEOF;
-} MD3Header_t;
-
-typedef struct {
-    int magic;
-    char name[MD3_MAX_QPATH];
-    int flags;
-    
-    int numFrames;
-    int numShaders;
-    int numVerts;
-    int numTriangles;
-
-    int offsetTriangles;
-    int offsetShaders;
-    int offsetTexCoords;
-    int offsetVertexCoords;
-    int offsetEnd;
-} MD3Surface_t;
-
-typedef struct {
-    char name[MD3_MAX_QPATH];
-    int index;
-} MD3Shader_t;
-
-typedef struct {
-    int a;
-    int b;
-    int c;
-} MD3Triangle_t;
-
-typedef struct {
-    float u;
-    float v;
-} MD3TexCoord_t;
-
-#define MD3_SCALE (1.0f/64.0f)
-
-typedef struct {
-    short x;
-    short y;
-    short z;
-    short n;
-} MD3Vertex_t;
-
-Mesh* FromMD3(const char* fileName) {
-    ifstream modelFile(fileName, ios::binary);
-    if (!modelFile) throw (errno);
-    
-    // Check magic and version
-    int version;
-    char magic[5] = {0};
-
-    modelFile.read(magic, 4*sizeof(char));
-    modelFile.read((char*)&version, sizeof(int));
-
-    if (strcmp(magic, MD3_MAGIC) != 0 || version != MD3_VERSION) {
-        printf("Got unexpected file format \"%s\" v%d, expecting \"%s\" v%d\n", magic, version, MD3_MAGIC, MD3_VERSION);
-        return NULL;
-    }
-
-    MD3Header_t header;
-    modelFile.read((char*)&header, sizeof(MD3Header_t));
-
-    int surfaceOffset = header.offsetSurfaces;
-    for (int s=0; s<header.numSurfaces; ++s) {
-        modelFile.seekg(surfaceOffset);
-
-        MD3Surface_t surface;
-        modelFile.read((char*)&surface, sizeof(MD3Surface_t));
-        
-        // Read triangles
-        modelFile.seekg(surfaceOffset + surface.offsetTriangles);
-
-        for (int t=0; t<surface.numTriangles; ++t) {
-            MD3Triangle_t triangle;
-            modelFile.read((char*)&triangle, sizeof(MD3Triangle_t));
-            printf("[%d] (%d, %d, %d)\n", t, triangle.a, triangle.b, triangle.c);
-        }
-
-        // Read shaders
-        modelFile.seekg(surfaceOffset + surface.offsetShaders);
-
-        for (int i=0; i<surface.numShaders; ++i) {
-            MD3Shader_t shader;
-            modelFile.read((char*)&shader, sizeof(MD3Shader_t));
-        }
-
-        // Read vertices
-        modelFile.seekg(surfaceOffset + surface.offsetVertexCoords);
-
-        for (int i=0; i<surface.numVerts; ++i) {
-            MD3Vertex_t vertex;
-            modelFile.read((char*)&vertex, sizeof(MD3Vertex_t));
-            printf("[%d] (%d, %d, %d) %d\n", i, vertex.x, vertex.y, vertex.z, vertex.n);
-        }
-
-        // Read Texture coordinates
-        /*
-        modelFile.seekg(surfaceOffset + surface.offsetTexCoords);
-
-        for (int i=0; i<surface.numVerts; ++i) {
-
-        }
-        */
-
-        surfaceOffset += surface.offsetEnd;
-    }
-
-    modelFile.close();
-
-    return NULL;
-}
-
 int main(int argc, char** argv) {
     printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
 
-    Mesh* mdf3Mesh = FromMD3("assets/rocketam.md3");
+    Mesh* mdf3Mesh = MD3ModelLoader::LoadFromFile("assets/rocketam.md3");
 
     return EXIT_SUCCESS;
 
