@@ -185,14 +185,62 @@ Mesh* MakeAxisMesh(Program* program, float r) {
     return mesh;
 }
 
+#define MD3_MAGIC "IDP3"
+#define MD3_VERSION 15
+#define MD3_MAX_QPATH 64
+
+typedef struct {
+    char name[MD3_MAX_QPATH];
+    int flags;
+
+    int numFrmes;
+    int numTag;
+    int numSurfaces;
+    int numSkins;
+
+    int offsetFrames;
+    int offsetTags;
+    int offsetSurfaces;
+    int offsetEOF;
+} MD3Header_t;
+
+typedef struct {
+    int magic;
+    char name[MD3_MAX_QPATH];
+    int flags;
+    
+    int numFrames;
+    int numShaders;
+    int numVerts;
+    int numTriangles;
+
+    int offsetTriangles;
+    int offsetShaders;
+    int offsetTexCoords;
+    int offsetVertexCoords;
+} MD3Surface_t;
+
+typedef struct {
+    int a;
+    int b;
+    int c;
+} MD3Triangle_t;
+
+typedef struct {
+    float u;
+    float v;
+} MD3TexCoord_t;
+
+#define MD3_SCALE (1.0f/64.0f)
+
+typedef struct {
+    short x;
+    short y;
+    short z;
+} MD3Vertex_t;
+
 Mesh* FromMD3(const char* fileName) {
-    return NULL;
-}
-
-int main(int argc, char** argv) {
-    printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
-
-    ifstream modelFile("assets/rocket.md3", ios::binary);
+    ifstream modelFile(fileName, ios::binary);
     if (!modelFile) throw (errno);
     
     // Check magic and version
@@ -202,30 +250,35 @@ int main(int argc, char** argv) {
     modelFile.read(magic, 4*sizeof(char));
     modelFile.read((char*)&version, sizeof(int));
 
-    if (strcmp(magic, "IDP3") != 0 || version != 15) {
-        printf("Got unexpected file format \"%s\" v%d, expecting \"IDP3\" v15\n", magic, version);
-        return EXIT_FAILURE;
+    if (strcmp(magic, MD3_MAGIC) != 0 || version != MD3_VERSION) {
+        printf("Got unexpected file format \"%s\" v%d, expecting \"%s\" v%d\n", magic, version, MD3_MAGIC, MD3_VERSION);
+        return NULL;
     }
 
-    struct {
-        char name[64];
-        int flags;
-
-        int numFrmes;
-        int numTag;
-        int numSurfaces;
-        int numSkins;
-
-        int offsetFrames;
-        int offsetTags;
-        int offsetSurfaces;
-        int offsetEOF;
-    } header;
-
+    MD3Header_t header;
     modelFile.read((char*)&header, sizeof(header));
+
+    if (header.numSurfaces == 0)
+        return NULL;
+
+    // Skip to first surface
+    modelFile.seekg(header.offsetSurfaces);
+
+    MD3Surface_t surface;
+    modelFile.read((char*)&surface, sizeof(surface));
+
+    // Read triangles
+
 
     modelFile.close();
 
+    return NULL;
+}
+
+int main(int argc, char** argv) {
+    printf("  GLFW %d.%d.%d\n", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
+
+    Mesh* mdf3Mesh = FromMD3("assets/rocketam.md3");
 
     return EXIT_SUCCESS;
 
