@@ -143,8 +143,8 @@ Mesh* MakeCubeMesh(Program* program) {
     };
 
     VertexAttributeBinding_t vertFmt[] = {
-        {program->GetAttributeID("vCoord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
-        {program->GetAttributeID("vColor"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+        {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
+        {program->GetAttributeID("color"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
     };
 
     Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 2);
@@ -168,8 +168,8 @@ Mesh* MakeAxisMesh(Program* program, float r) {
     };
 
     VertexAttributeBinding_t vertFmt[] = {
-        {program->GetAttributeID("vCoord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
-        {program->GetAttributeID("vColor"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
+        {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(0)},
+        {program->GetAttributeID("color"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat))}
     };
 
     Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 2);
@@ -194,8 +194,8 @@ int main(int argc, char** argv) {
     printf("  [GL_VERSION]:    %s;\n", glGetString(GL_VERSION));
 
     Program* program = MakeProgram(
-        readFile("glsl/one.vert"),
-        readFile("glsl/one.frag")
+        readFile("glsl/flatShade.vert"),
+        readFile("glsl/flatShade.frag")
     );
 
     if (program == NULL) {
