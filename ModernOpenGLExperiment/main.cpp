@@ -218,7 +218,13 @@ typedef struct {
     int offsetShaders;
     int offsetTexCoords;
     int offsetVertexCoords;
+    int offsetEnd;
 } MD3Surface_t;
+
+typedef struct {
+    char name[MD3_MAX_QPATH];
+    int index;
+} MD3Shader_t;
 
 typedef struct {
     int a;
@@ -237,6 +243,7 @@ typedef struct {
     short x;
     short y;
     short z;
+    short n;
 } MD3Vertex_t;
 
 Mesh* FromMD3(const char* fileName) {
@@ -256,19 +263,52 @@ Mesh* FromMD3(const char* fileName) {
     }
 
     MD3Header_t header;
-    modelFile.read((char*)&header, sizeof(header));
+    modelFile.read((char*)&header, sizeof(MD3Header_t));
 
-    if (header.numSurfaces == 0)
-        return NULL;
+    int surfaceOffset = header.offsetSurfaces;
+    for (int s=0; s<header.numSurfaces; ++s) {
+        modelFile.seekg(surfaceOffset);
 
-    // Skip to first surface
-    modelFile.seekg(header.offsetSurfaces);
+        MD3Surface_t surface;
+        modelFile.read((char*)&surface, sizeof(MD3Surface_t));
+        
+        // Read triangles
+        modelFile.seekg(surfaceOffset + surface.offsetTriangles);
 
-    MD3Surface_t surface;
-    modelFile.read((char*)&surface, sizeof(surface));
+        for (int t=0; t<surface.numTriangles; ++t) {
+            MD3Triangle_t triangle;
+            modelFile.read((char*)&triangle, sizeof(MD3Triangle_t));
+            printf("[%d] (%d, %d, %d)\n", t, triangle.a, triangle.b, triangle.c);
+        }
 
-    // Read triangles
+        // Read shaders
+        modelFile.seekg(surfaceOffset + surface.offsetShaders);
 
+        for (int i=0; i<surface.numShaders; ++i) {
+            MD3Shader_t shader;
+            modelFile.read((char*)&shader, sizeof(MD3Shader_t));
+        }
+
+        // Read vertices
+        modelFile.seekg(surfaceOffset + surface.offsetVertexCoords);
+
+        for (int i=0; i<surface.numVerts; ++i) {
+            MD3Vertex_t vertex;
+            modelFile.read((char*)&vertex, sizeof(MD3Vertex_t));
+            printf("[%d] (%d, %d, %d) %d\n", i, vertex.x, vertex.y, vertex.z, vertex.n);
+        }
+
+        // Read Texture coordinates
+        /*
+        modelFile.seekg(surfaceOffset + surface.offsetTexCoords);
+
+        for (int i=0; i<surface.numVerts; ++i) {
+
+        }
+        */
+
+        surfaceOffset += surface.offsetEnd;
+    }
 
     modelFile.close();
 
