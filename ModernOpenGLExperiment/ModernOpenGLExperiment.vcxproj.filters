@@ -50,5 +50,16 @@
     <Filter Include="Camera">
       <UniqueIdentifier>{c8222a7e-9816-44c2-a802-af96b9173460}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GLSL">
+      <UniqueIdentifier>{786851dd-c1c7-4ea3-9e3f-525f96389748}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="glsl\one.frag">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="glsl\one.vert">
+      <Filter>GLSL</Filter>
+    </None>
   </ItemGroup>
 </Project>
