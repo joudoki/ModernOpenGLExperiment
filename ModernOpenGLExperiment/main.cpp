@@ -12,9 +12,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <map>
 #include <string>
-#include <vector>
 
 using namespace std;
 
@@ -206,8 +204,8 @@ int main(int argc, char** argv) {
         readFile("glsl/textured.frag")
     );
 
-    glActiveTexture(GL_TEXTURE0);
     Texture* tex = Texture::LoadFromFile("assets/rockammo2.tga");
+    tex->Bind(0);
 
     textured->Bind();
     glUniform1i(textured->GetUniformID("tex"), 0);

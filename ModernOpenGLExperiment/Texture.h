@@ -26,6 +26,11 @@ public:
         glBindTexture(GL_TEXTURE_2D, id);
     }
 
+    void Bind(GLuint texUnit) const {
+        glActiveTexture(GL_TEXTURE0 + texUnit);
+        glBindTexture(GL_TEXTURE_2D, id);
+    }
+
     GLuint GetID() const { return id; }
 };
 
