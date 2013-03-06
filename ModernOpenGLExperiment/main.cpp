@@ -232,6 +232,22 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
     model->GetVertices(0, vertexData, vertexCount);
     model->GetIndices(0, indexData, triangleCount);
 
+    for (size_t i=0; i<vertexCount; ++i) {
+        printf("%3d %10f %10f %10f | %10f %10f %10f | %10f %10f\n", i,
+            vertexData[i].coord.x,    vertexData[i].coord.y,    vertexData[i].coord.z,
+            vertexData[i].normal.x,   vertexData[i].normal.y,   vertexData[i].normal.z,
+            vertexData[i].texCoord.x, vertexData[i].texCoord.y
+        );
+    }
+
+    for (size_t i=0; i<triangleCount; ++i) {
+        printf("%3d %6hd %6hd %6hd\n", i,
+            indexData[3*i],
+            indexData[3*i+1],
+            indexData[3*i+2]
+        );
+    }
+
     GLsizei stride = 8*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
         {program->GetAttributeID("coord"),  3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
@@ -353,7 +369,7 @@ int main(int argc, char** argv) {
 
             // Render model
             textured->Bind();
-            Program::SetUniform(textured->GetUniform("transform"), viewClip);
+            Program::SetUniform(textured->GetUniform("transform"), viewClip * glm::scale(glm::mat4(), glm::vec3(10.0f)));
             ammoBox->Render();
 
             glfwSwapBuffers();

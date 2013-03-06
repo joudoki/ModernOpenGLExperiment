@@ -18,7 +18,7 @@ namespace MD3 {
         int flags;
 
         int numFrames;
-        int numTag;
+        int numTags;
         int numSurfaces;
         int numSkins;
 
@@ -35,6 +35,12 @@ namespace MD3 {
         float radius;
         char name[16];
     } Frame_t;
+
+    typedef struct {
+        char name[MD3_MAX_QPATH];
+        glm::vec3 origin;
+        glm::vec3 axis[3];
+    } Tag_t;
 
     typedef struct {
         int magic;

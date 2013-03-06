@@ -2,7 +2,7 @@
 
 #define LATLONSCALE (360.0f/255.0f)
 
-MD3Model::MD3Model(const char* fileName) : modelFile(fileName) {
+MD3Model::MD3Model(const char* fileName) : modelFile(fileName, std::ios::binary) {
 
 };
 
@@ -105,10 +105,10 @@ void MD3Model::GetVertices(size_t i, Vertex_t*& vertexData, size_t& vertexCount)
         modelFile.read((char*)&vertex, sizeof(MD3::Vertex_t));
 
         vertexData[i].coord = glm::vec3(
-            vertex.x * MD3_SCALE,
-            vertex.y * MD3_SCALE,
-            vertex.z * MD3_SCALE
-        );
+            vertex.x,
+            vertex.y,
+            vertex.z
+        ) * MD3_SCALE;
 
         vertexData[i].normal = DecodeNormal(vertex.n);
     }
@@ -125,12 +125,6 @@ void MD3Model::GetVertices(size_t i, Vertex_t*& vertexData, size_t& vertexCount)
             texCoord.v
         );
     }
-
-    /*printf("[%d] (%f, %f, %f) (%f, %f, %f) (%f, %f)\n", i,
-        vertices[i].coord.x,    vertices[i].coord.y,    vertices[i].coord.z,
-        vertices[i].normal.x,   vertices[i].normal.y,   vertices[i].normal.z,
-        vertices[i].texCoord.x, vertices[i].texCoord.y
-    );*/
 }
 
 void MD3Model::GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount) {
@@ -150,9 +144,9 @@ void MD3Model::GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount)
         modelFile.read((char*)&triangle, sizeof(MD3::Triangle_t));
 
         // TODO: Dump these directly into indices instead of copying
-        indexData[3*t]   = triangle.a;
-        indexData[3*t+1] = triangle.b;
-        indexData[3*t+2] = triangle.c;
+        indexData[3*t]   = (GLushort)triangle.a;
+        indexData[3*t+1] = (GLushort)triangle.b;
+        indexData[3*t+2] = (GLushort)triangle.c;
     }
 }
 
