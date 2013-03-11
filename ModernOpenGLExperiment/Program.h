@@ -46,8 +46,16 @@ public:
     VertexAttribute_t const * GetAttribute(const std::string& attrName) const;
     GLuint GetAttributeID(const std::string& attrName) const;
 
-    static void SetUniform(Uniform_t const * uniform, float value) {
+    static void SetUniform(Uniform_t const * uniform, GLfloat value) {
         glUniform1f(uniform->location, value);
+    }
+
+    static void SetUniform(Uniform_t const * uniform, GLint value) {
+        glUniform1i(uniform->location, value);
+    }
+
+    static void SetUniform(Uniform_t const * uniform, GLuint value) {
+        glUniform1ui(uniform->location, value);
     }
 
     static void SetUniform(Uniform_t const * uniform, const glm::mat4& value) {
