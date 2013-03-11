@@ -88,10 +88,6 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Trackball.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="glsl\one.frag" />
-    <None Include="glsl\one.vert" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
