@@ -26,9 +26,9 @@ private:
     void AcquireUniforms();
     void AcquireAttributes();
 
-    // The only thing that really matters about this is that the location will be 0
-    // (Which the default constructor will do for us)
+    // The only thing that really matters about this is that the location will be -1
     static const Uniform_t DEFAULT_UNIFORM;
+    static const VertexAttribute_t DEFAULT_VERTEXATTRIBUTE;
 
 public:
     static Program* CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader);

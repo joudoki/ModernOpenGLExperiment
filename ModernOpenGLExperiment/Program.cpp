@@ -1,6 +1,7 @@
 #include "Program.h"
 
-const Uniform_t Program::DEFAULT_UNIFORM;
+const Uniform_t Program::DEFAULT_UNIFORM = {"", -1, 0, 0};
+const VertexAttribute_t Program::DEFAULT_VERTEXATTRIBUTE = {"", -1, 0, 0};
 
 Program::~Program() {
     glDeleteProgram(programHandle);
@@ -90,7 +91,7 @@ const VertexAttribute_t* Program::GetAttribute(const std::string& attrName) cons
     auto it = attributes.find(attrName);
     
     return (it == attributes.end())
-        ? NULL
+        ? &DEFAULT_VERTEXATTRIBUTE
         : &((*it).second);
 }
 
