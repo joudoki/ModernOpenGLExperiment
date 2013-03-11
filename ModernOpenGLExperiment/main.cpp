@@ -141,7 +141,7 @@ COORD( 1.0f,  1.0f, -1.0f, 1.0f, 0.0f), // 6
 COORD( 1.0f,  1.0f,  1.0f, 1.0f, 1.0f)  // 7
     */
 
-    MD3Model::Vertex_t data[] = {
+    MD3Model::Vertex_t vertexData[] = {
         // -X side, 0,2,1,3
         COORD(-1.0f, -1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,    0.0f, 0.0f), // 0  0
         COORD(-1.0f,  1.0f, -1.0f,    -1.0f,  0.0f,  0.0f,    1.0f, 0.0f), // 2  1
@@ -178,18 +178,20 @@ COORD( 1.0f,  1.0f,  1.0f, 1.0f, 1.0f)  // 7
         COORD( 1.0f, -1.0f,  1.0f,     0.0f,  0.0f,  1.0f,    0.0f, 1.0f), // 5 22
         COORD( 1.0f,  1.0f,  1.0f,     0.0f,  0.0f,  1.0f,    1.0f, 1.0f)  // 7 23
     };
+    GLuint vertexCount = 24;
 
 #undef COORD
 
-    GLubyte indices[] = {
+    GLubyte indexData[] = {
           0,   1,  2,   1,  3,  2,
           4,   5,  6,   5,  7,  6,
           8,   9, 10,   9, 11, 10,
           12, 13, 14,  13, 15, 14,
           16, 17, 18,  17, 19, 18,
           20, 21, 22,  21, 23, 22
-
     };
+    GLuint triangleCount = 12;
+    GLuint indexCount = 3*triangleCount;
 
     GLsizei stride = 8*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
@@ -199,8 +201,8 @@ COORD( 1.0f,  1.0f,  1.0f, 1.0f, 1.0f)  // 7
     };
 
     Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 3);
-    mesh->SetVertexData(24, sizeof(data), data);
-    mesh->SetIndexData(UnsignedByteIndex, 36, sizeof(indices), indices);
+    mesh->SetVertexData(vertexCount, vertexCount*stride, vertexData);
+    mesh->SetIndexData(UnsignedByteIndex, indexCount, indexCount*sizeof(GLushort), indexData);
 
     return mesh;
 }
@@ -288,9 +290,9 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
 
     GLsizei stride = 8*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
-        {0,  3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
-        {1,  3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))},
-        {2,  2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6*sizeof(GLfloat))}
+        {0, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
+        {1, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))},
+        {2, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6*sizeof(GLfloat))}
     };
 
     Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 3);

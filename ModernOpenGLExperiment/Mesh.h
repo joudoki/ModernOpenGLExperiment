@@ -32,7 +32,24 @@ public:
     Mesh(PrimitiveType primitiveType, VertexAttributeBinding_t* attribFormats, GLuint attribCount);
     ~Mesh();
 
+    /**
+     * SetVertexData
+     * Uploads the given vertex data to the vertex buffer associated with this mesh
+     *
+     * count - The number of vertices
+     * size  - The actual size of the data to upload (in bytes)
+     * data  - Pointer to the data in memory
+     */
     void SetVertexData(GLuint count, GLuint size, void* data);
+
+    /**
+     * SetIndexData
+     * Uploads the given index data to the index buffer associated with this mesh
+     *
+     * count - The number of indices
+     * size  - The actual size of the data to upload (in bytes)
+     * data  - Pointer to the data in memory
+     */
     void SetIndexData(IndexType indexFormat, GLuint count, GLuint size, void* data);
 
     GLenum Render() const;
