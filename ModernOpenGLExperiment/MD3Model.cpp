@@ -150,7 +150,12 @@ void MD3Model::GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount)
     }
 }
 
-BoundingBox MD3Model::GetFrame(size_t i) {
+MD3::Frame_t MD3Model::GetFrame(size_t i) {
+    assert(i < header.numFrames);
+    return frames[i];
+}
+
+BoundingBox MD3Model::GetFrameBB(size_t i) {
     assert(i < header.numFrames);
 
     MD3::Frame_t frame = frames[i];

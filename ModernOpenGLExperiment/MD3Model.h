@@ -119,7 +119,9 @@ public:
 
     void GetVertices(size_t i, Vertex_t*& vertexData, size_t& vertexCount);
     void GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount);
-    BoundingBox GetFrame(size_t i);
+    
+    MD3::Frame_t GetFrame(size_t i);
+    BoundingBox GetFrameBB(size_t i);
 };
 
 #endif
