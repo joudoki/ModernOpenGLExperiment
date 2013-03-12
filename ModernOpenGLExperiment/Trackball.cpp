@@ -59,7 +59,6 @@ void Trackball::MouseUpdate(bool mouseDown, int i, int j) {
         if (!mouseDown) {
             // Update rotational matrix
             view = GetRotationMatrix();
-            printf("%f 0x%08x\n", view[0].x, view[0].x);
 
             // Stop Dragging
             dragging = false;
