@@ -10,7 +10,7 @@
  *
  * Typically, two of these shaders will be accumulated into a Program.
  */
-template <ShaderType type>
+template <ShaderType::ShaderType type>
 class Shader {
 private:
     GLuint shaderHandle;
@@ -56,5 +56,8 @@ public:
         return log;
     }
 };
+
+typedef Shader<ShaderType::VertexShader>   VertexShader;
+typedef Shader<ShaderType::FragmentShader> FragmentShader;
 
 #endif

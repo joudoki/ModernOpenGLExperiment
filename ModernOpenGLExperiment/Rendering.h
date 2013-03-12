@@ -18,36 +18,44 @@
 /**
  * ShaderType - Specifies the type of shader that a Shader object holds.
  */
-enum ShaderType {
-    VertexShader = GL_VERTEX_SHADER,
-    FragmentShader = GL_FRAGMENT_SHADER
-};
+namespace ShaderType {
+    enum ShaderType {
+        VertexShader = GL_VERTEX_SHADER,
+        FragmentShader = GL_FRAGMENT_SHADER
+    };
+}
 
 /**
  * IndexType - Specifies the size of the index in an index buffer
  */
-enum IndexType {
-    UnsignedByteIndex = GL_UNSIGNED_BYTE,
-    UnsignedShortIndex = GL_UNSIGNED_SHORT,
-    UnsignedIntIndex = GL_UNSIGNED_INT
-};
+namespace IndexType {
+    enum IndexType {
+        UnsignedByteIndex = GL_UNSIGNED_BYTE,
+        UnsignedShortIndex = GL_UNSIGNED_SHORT,
+        UnsignedIntIndex = GL_UNSIGNED_INT
+    };
+}
 
 /**
  * PrimitiveType - Specifies the kind of primitives that a Mesh holds
  */
-enum PrimitiveType {
-    PointPrimitive = GL_POINTS,
-    LineStripPrimitive = GL_LINE_STRIP,
-    LineLoopPrimitive = GL_LINE_LOOP,
-    LinesPrimitive = GL_LINES,
-    TriangleStripPrimitive = GL_TRIANGLE_STRIP,
-    TriangleFanPrimitive = GL_TRIANGLE_FAN,
-    TrianglesPrimitive = GL_TRIANGLES
-};
+namespace PrimitiveType {
+    enum PrimitiveType {
+        PointPrimitive = GL_POINTS,
+        LineStripPrimitive = GL_LINE_STRIP,
+        LineLoopPrimitive = GL_LINE_LOOP,
+        LinesPrimitive = GL_LINES,
+        TriangleStripPrimitive = GL_TRIANGLE_STRIP,
+        TriangleFanPrimitive = GL_TRIANGLE_FAN,
+        TrianglesPrimitive = GL_TRIANGLES
+    };
+}
 
-enum TextureType {
-    Texture2D = GL_TEXTURE_2D
-};
+namespace TextureType {
+    enum TextureType {
+        Texture2D = GL_TEXTURE_2D
+    };
+}
 
 /**
  * Uniform_t - Simple data structure holding information about a Uniform in a Shader/Program.

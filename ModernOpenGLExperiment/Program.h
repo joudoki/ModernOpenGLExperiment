@@ -31,7 +31,7 @@ private:
     static const VertexAttribute_t DEFAULT_VERTEXATTRIBUTE;
 
 public:
-    static Program* CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader);
+    static Program* CreateFromShaders(VertexShader* vertexShader, FragmentShader* fragmentShader);
 
     ~Program();
 

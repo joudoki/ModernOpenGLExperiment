@@ -20,16 +20,16 @@ private:
     GLuint vertexCount;
     GLuint vertexSize;
     
-    IndexType indexFormat;
+    IndexType::IndexType indexFormat;
     std::vector<VertexAttributeBinding_t> vertexFormat;
     
-    PrimitiveType primitiveType;
+    PrimitiveType::PrimitiveType primitiveType;
 
     // OpenGL performance hint
     GLenum isDynamic;
 
 public:
-    Mesh(PrimitiveType primitiveType, VertexAttributeBinding_t* attribFormats, GLuint attribCount);
+    Mesh(PrimitiveType::PrimitiveType primitiveType, VertexAttributeBinding_t* attribFormats, GLuint attribCount);
     ~Mesh();
 
     /**
@@ -50,7 +50,7 @@ public:
      * size  - The actual size of the data to upload (in bytes)
      * data  - Pointer to the data in memory
      */
-    void SetIndexData(IndexType indexFormat, GLuint count, GLuint size, void* data);
+    void SetIndexData(IndexType::IndexType indexFormat, GLuint count, GLuint size, void* data);
 
     GLenum Render() const;
 };

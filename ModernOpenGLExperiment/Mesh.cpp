@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
-Mesh::Mesh(PrimitiveType primitiveType, VertexAttributeBinding_t* attribFormats, GLuint attribCount) : 
-    indexCount(0), vertexCount(0), vertexSize(0), indexFormat(UnsignedShortIndex),
+Mesh::Mesh(PrimitiveType::PrimitiveType primitiveType, VertexAttributeBinding_t* attribFormats, GLuint attribCount) : 
+    indexCount(0), vertexCount(0), vertexSize(0), indexFormat(IndexType::UnsignedShortIndex),
     primitiveType(primitiveType), isDynamic(GL_STATIC_DRAW) {
 
     glGenBuffers(2, vboHandles);
@@ -35,7 +35,7 @@ void Mesh::SetVertexData(GLuint count, GLuint size, void* data) {
     glBufferData(GL_ARRAY_BUFFER, size, data, isDynamic);
 }
 
-void Mesh::SetIndexData(IndexType format, GLuint count, GLuint size, void* data) {
+void Mesh::SetIndexData(IndexType::IndexType format, GLuint count, GLuint size, void* data) {
     indexCount = count;
     indexFormat = format;
 

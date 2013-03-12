@@ -90,8 +90,8 @@ string readFile(const char* fileName) {
 }
 
 Program* MakeProgram(const string& vertexShaderSource, const string& fragmentShaderSource) {
-    Shader<VertexShader>* vertexShader = Shader<VertexShader>::CompileFromSource(vertexShaderSource);
-    Shader<FragmentShader>* fragmentShader = Shader<FragmentShader>::CompileFromSource(fragmentShaderSource);
+    VertexShader*     vertexShader = VertexShader::CompileFromSource(vertexShaderSource);
+    FragmentShader* fragmentShader = FragmentShader::CompileFromSource(fragmentShaderSource);
 
     if (!vertexShader->IsValid()) {
         fprintf(stderr, "Compile Error: %s\n", vertexShader->GetCompileLog().c_str());
@@ -200,9 +200,9 @@ COORD( 1.0f,  1.0f,  1.0f, 1.0f, 1.0f)  // 7
         {2, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6*sizeof(GLfloat))}
     };
 
-    Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 3);
+    Mesh* mesh = new Mesh(PrimitiveType::TrianglesPrimitive, vertFmt, 3);
     mesh->SetVertexData(vertexCount, vertexCount*stride, vertexData);
-    mesh->SetIndexData(UnsignedByteIndex, indexCount, indexCount*sizeof(GLushort), indexData);
+    mesh->SetIndexData(IndexType::UnsignedByteIndex, indexCount, indexCount*sizeof(GLushort), indexData);
 
     return mesh;
 }
@@ -226,9 +226,9 @@ Mesh* MakeAxisMesh(Program* program) {
         {program->GetAttributeID("color"), 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))}
     };
 
-    Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 2);
+    Mesh* mesh = new Mesh(PrimitiveType::LinesPrimitive, vertFmt, 2);
     mesh->SetVertexData(8, sizeof(data), data);
-    mesh->SetIndexData(UnsignedByteIndex, 6, sizeof(indices), indices);
+    mesh->SetIndexData(IndexType::UnsignedByteIndex, 6, sizeof(indices), indices);
 
     return mesh;
 }
@@ -256,9 +256,9 @@ Mesh* MakeAABBMesh(Program* program) {
         {program->GetAttributeID("coord"), 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)}
     };
 
-    Mesh* mesh = new Mesh(LinesPrimitive, vertFmt, 1);
+    Mesh* mesh = new Mesh(PrimitiveType::LinesPrimitive, vertFmt, 1);
     mesh->SetVertexData(8, sizeof(data), data);
-    mesh->SetIndexData(UnsignedByteIndex, 24, sizeof(indices), indices);
+    mesh->SetIndexData(IndexType::UnsignedByteIndex, 24, sizeof(indices), indices);
 
     return mesh;
 }
@@ -274,7 +274,7 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
 
     for (size_t i=0; i<vertexCount; ++i) {
         printf("%3d %10f %10f %10f | %10f %10f %10f | %10f %10f\n", i,
-            vertexData[i].coord.y,    vertexData[i].coord.z,    vertexData[i].coord.x,
+            vertexData[i].coord.x,    vertexData[i].coord.y,    vertexData[i].coord.z,
             vertexData[i].normal.x,   vertexData[i].normal.y,   vertexData[i].normal.z,
             vertexData[i].texCoord.x, vertexData[i].texCoord.y
         );
@@ -295,9 +295,9 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
         {2, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6*sizeof(GLfloat))}
     };
 
-    Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 3);
+    Mesh* mesh = new Mesh(PrimitiveType::TrianglesPrimitive, vertFmt, 3);
     mesh->SetVertexData(vertexCount, vertexCount*stride, vertexData);
-    mesh->SetIndexData(UnsignedByteIndex, indexCount, indexCount*sizeof(GLushort), indexData);
+    mesh->SetIndexData(IndexType::UnsignedByteIndex, indexCount, indexCount*sizeof(GLushort), indexData);
 
     delete[] vertexData;
     delete[] indexData;
@@ -322,69 +322,50 @@ void setup(int width, int height) {
 
 int main(int argc, char** argv) {
     int width = 800, height = 600;
-    float cameraDistance = 4.0f;
-
     setup(width, height);
 
     // Load shaders
-    /*
-    Program* flatShade = MakeProgram(
-        readFile("glsl/flatShade.vert"),
-        readFile("glsl/flatShade.frag")
-    );
-    */
-
-    Program* textured = MakeProgram(
+    Program* textureShader = MakeProgram(
         readFile("glsl/textured.vert"),
         readFile("glsl/textured.frag")
     );
 
-    //if (flatShade == NULL || textured == NULL) {
-    if (textured == NULL) {
+    if (textureShader == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
     // Load textures
-    Texture* tex = Texture::LoadFromFile("textures/rockammo2.tga");
-    Texture::Bind(0, tex);
+    Texture* texture0 = Texture::LoadFromFile("textures/rockammo2.tga");
+    Texture::Bind(0, texture0);
     
     // Setup uniforms that are constant over lifetime of shader
-    textured->Bind();
-    Program::SetUniform(textured->GetUniform("diffuseSampler"), (GLuint)0);
+    textureShader->Bind();
+    Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    //Mesh* axis = MakeAxisMesh(flatShade);
-    //glm::mat4 axisModel = glm::scale(glm::mat4(), glm::vec3(2.0f));
-
     MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
     if (model == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    Mesh* ammoBox = LoadMD3Mesh(textured, model);
+    float cameraDistance = 2.0f * model->GetFrame(0).radius;
+    Mesh* ammoBox = LoadMD3Mesh(textureShader, model);
 
-    //Mesh* aabb = MakeAABBMesh(flatShade);
-    //glm::mat4 aabbModel = model->GetFrameBB(0).GetTransform();
+    delete model;
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
     
-    glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -2.0f * model->GetFrame(0).radius));
-    glm::mat4 viewRotate = glm::mat4();
-
     glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 1024.0f);
+    glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -cameraDistance));
+    glm::mat4 viewRotate = glm::mat4();
     
-    delete model;
-
-    // MVP = P * V * M
-
     float time(0.0f), lastTime(0.0f);
 
     do {
         time = (float) glfwGetTime();
-
         glfwPollEvents();
 
         // Update trackball state
@@ -402,18 +383,10 @@ int main(int argc, char** argv) {
             glm::mat4 viewClip = project * viewTranslate * viewRotate;
             
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
-            // Render axis
-            //flatShade->Bind();
-            //Program::SetUniform(flatShade->GetUniform("transform"), viewClip * axisModel);
-            //axis->Render();
-
-            //Program::SetUniform(flatShade->GetUniform("transform"), viewClip * aabbModel);
-            //aabb->Render();
 
             // Render model
-            textured->Bind();
-            Program::SetUniform(textured->GetUniform("transform"), viewClip);// * glm::scale(glm::mat4(), glm::vec3(10.0f)));
+            textureShader->Bind();
+            Program::SetUniform(textureShader->GetUniform("transform"), viewClip);
             ammoBox->Render();
 
             glfwSwapBuffers();
@@ -422,14 +395,9 @@ int main(int argc, char** argv) {
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
-    //delete axis;
-    //delete aabb;
     delete ammoBox;
-
-    //delete flatShade;
-    delete textured;
-
-    delete tex;
+    delete textureShader;
+    delete texture0;
     
     glfwTerminate();
     return EXIT_SUCCESS;

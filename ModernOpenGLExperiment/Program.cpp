@@ -102,7 +102,7 @@ GLuint Program::GetAttributeID(const std::string& attrName) const {
         : attr->location;
 }
 
-Program* Program::CreateFromShaders(Shader<VertexShader>* vertexShader, Shader<FragmentShader>* fragmentShader) {
+Program* Program::CreateFromShaders(VertexShader* vertexShader,  FragmentShader* fragmentShader) {
     Program* program = new Program();
 
     glAttachShader(program->programHandle,   vertexShader->GetHandle());
