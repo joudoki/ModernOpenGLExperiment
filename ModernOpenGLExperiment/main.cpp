@@ -268,8 +268,9 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
     GLushort* indexData = NULL;
     size_t vertexCount, triangleCount, indexCount;
 
-    model->GetVertices(0, vertexData, vertexCount);
-    model->GetIndices(0, indexData, triangleCount);
+    model->GetVertices(0, 0, vertexData, vertexCount);
+    model->GetIndices(0,     indexData,  triangleCount);
+
     indexCount = triangleCount * 3;
 
     for (size_t i=0; i<vertexCount; ++i) {
@@ -345,12 +346,13 @@ int main(int argc, char** argv) {
 
     // Setup objects
     MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
+
     if (model == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    float cameraDistance = 2.0f * model->GetFrame(0).radius;
+    float cameraDistance = 2.0f * model->GetFrame(0)->radius;
     Mesh* ammoBox = LoadMD3Mesh(textureShader, model);
 
     delete model;

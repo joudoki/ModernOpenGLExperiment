@@ -1,14 +1,6 @@
 #include "MD3Model.h"
 
-#define LATLONSCALE (360.0f/255.0f)
-
-MD3Model::MD3Model(const char* fileName) : modelFile(fileName, std::ios::binary) {
-
-};
-
-MD3Model::~MD3Model() { 
-    modelFile.close();
-};
+#define LATLONSCALE (3.141926f/128.0f)
 
 // Decodes an spherical coordinate system encoded normal
 // http://www.icculus.org/homepages/phaethon/q3a/formats/md3format.html#Normals
@@ -16,148 +8,152 @@ MD3Model::~MD3Model() {
 // [0..7]  (8 bits) longitude
 // [8..15] (8 bits) latitude
 // Values should be expected to fill whole range [0,255]
-glm::vec3 MD3Model::DecodeNormal(short normal) {
-    float lat = LATLONSCALE * ((normal >> 8) && 255);
-    float lon = LATLONSCALE * (normal && 255);
+glm::vec3 MD3Model::DecodeNormal(GLushort normal) {
+    float lat = LATLONSCALE * (float)((normal >> 8u) & 0xFF);
+    float lng = LATLONSCALE * (float)(normal         & 0xFF);
 
     return glm::vec3(
-        glm::cos(lat) * glm::sin(lon),
-        glm::sin(lat) * glm::sin(lon),
-        glm::cos(lon)
+        glm::cos(lat) * glm::sin(lng),
+        glm::sin(lat) * glm::sin(lng),
+                        glm::cos(lng)
     );
 }
 
-MD3Model* MD3Model::LoadFromFile(const char* fileName) {
-    MD3Model* model = new MD3Model(fileName);
-    
-    if (!model->modelFile) {
-        delete model;
-        throw errno;
+MD3Model::MD3Model(std::ifstream& infile) : buffer(NULL), header(NULL) {
+    // Determine length of file
+    infile.seekg(0, std::ifstream::end);
+    size_t length = infile.tellg();
+    infile.seekg(0);
+
+    // Read whole file into buffer
+    buffer = new char[length];
+    infile.read(buffer, length);
+
+    // Extract dependent pointers from headers
+    header = reinterpret_cast<MD3::Header_t*>(buffer + 8);
+
+    for (int i=0; i<header->numFrames; ++i) {
+        frames.push_back(reinterpret_cast<MD3::Frame_t*>(buffer + header->offsetFrames + i * sizeof(MD3::Frame_t)));
     }
-    
-    // Check magic and version
-    int version;
-    char magic[5] = {0};
 
-    model->modelFile.read(magic, 4*sizeof(char));
-    model->modelFile.read((char*)&version, sizeof(int));
+    for (int i=0; i<header->numTags; ++i) {
+        tags.push_back(reinterpret_cast<MD3::Tag_t*>(buffer + header->offsetTags + i * sizeof(MD3::Tag_t)));
+    }
 
-    if (strcmp(magic, MD3_MAGIC) != 0 || version != MD3_VERSION) {
-        printf("Got unexpected file format \"%s\" v%d, expecting \"%s\" v%d\n", magic, version, MD3_MAGIC, MD3_VERSION);
-        delete model;
+    int surfaceOffset = header->offsetSurfaces;
+    for (int i=0; i<header->numSurfaces; ++i) {
+        MD3::Surface_t* surface = reinterpret_cast<MD3::Surface_t*>(buffer + surfaceOffset);
+        surfaceOffset += surface->offsetEnd;
+        surfaces.push_back(surface);
+    }
+};
+
+MD3Model::~MD3Model() {
+    delete[] buffer;
+};
+
+MD3Model* MD3Model::LoadFromFile(const char* filename) {
+    std::ifstream infile(filename, std::ios::binary);
+    if (!infile) throw errno;
+
+    int magic, version;
+    infile.read(reinterpret_cast<char*>(&magic),   sizeof(int));
+    infile.read(reinterpret_cast<char*>(&version), sizeof(int));
+
+    if (magic != 860898377 || version != 15) {
+        infile.close();
+        
+        fprintf(stderr, "Got unexpected file format %d v%d, expecting %d v%d\n", 
+            magic, version, MD3_MAGIC, MD3_VERSION);
+
         return NULL;
     }
 
-    // Get the header
-    model->modelFile.read((char*)&model->header, sizeof(MD3::Header_t));
-
-    // Read surfaces
-    model->ReadSurfaces();
-    
-    // Read frames
-    model->ReadFrames();
+    MD3Model* model = new MD3Model(infile);
+    infile.close();
 
     return model;
 }
 
-void MD3Model::ReadFrames() {
-    // Frames are of fixed length and are sequential
-    modelFile.seekg(header.offsetFrames);
-
-    for (int i=0; i<header.numFrames; ++i) {
-        MD3::Frame_t frame;
-        modelFile.read((char*)&frame, sizeof(MD3::Frame_t));
-
-        frames.push_back(frame);
-    }
+MD3::Vertex_t* MD3Model::GetVertices(size_t s, size_t f) const {
+    MD3::Surface_t* surface = surfaces[s];
+    return reinterpret_cast<MD3::Vertex_t*>(
+        reinterpret_cast<char*>(surface) +
+        surface->offsetVertexCoords + 
+        f * surface->numVerts * sizeof(MD3::Vertex_t)
+    );
 }
 
-void MD3Model::ReadSurfaces() {
-    int surfaceOffset = header.offsetSurfaces;
-
-    for (int s=0; s<header.numSurfaces; ++s) {
-        modelFile.seekg(surfaceOffset);
-
-        MD3::Surface_t surface;
-        modelFile.read((char*)&surface, sizeof(MD3::Surface_t));
-
-        surfaces.push_back(surface);
-        surfaceOffsets.push_back(surfaceOffset);
-
-        surfaceOffset += surface.offsetEnd;
-    }
+MD3::Shader_t* MD3Model::GetShaders(size_t s) const {
+    MD3::Surface_t* surface = surfaces[s];
+    return reinterpret_cast<MD3::Shader_t*>(
+        reinterpret_cast<char*>(surface) +
+        surface->offsetShaders
+    );
 }
 
-void MD3Model::GetVertices(size_t i, Vertex_t*& vertexData, size_t& vertexCount) {
-    assert(i < header.numSurfaces);
+MD3::Triangle_t* MD3Model::GetTriangles(size_t s) const {
+    MD3::Surface_t* surface = surfaces[s];
+    return reinterpret_cast<MD3::Triangle_t*>(
+        reinterpret_cast<char*>(surface) +
+        surface->offsetTriangles
+    );
+}
 
-    MD3::Surface_t surface = surfaces[i];
-    int surfaceOffset = surfaceOffsets[i];
+MD3::TexCoord_t* MD3Model::GetTexCoords(size_t s) const {
+    MD3::Surface_t* surface = surfaces[s];
+    return reinterpret_cast<MD3::TexCoord_t*>(
+        reinterpret_cast<char*>(surface) +
+        surface->offsetTexCoords
+    );
+}
 
-    vertexData = new Vertex_t[surface.numVerts];
-    vertexCount = surface.numVerts;
+void MD3Model::GetVertices(size_t s, size_t f, Vertex_t*& vertexData, size_t& vertexCount) {
+    assert(s < header->numSurfaces);
+    assert(f < header->numFrames);
+    
+    MD3::Surface_t*    surface = surfaces[s];
+    MD3::Vertex_t*    vertices = GetVertices(s, f);
+    MD3::TexCoord_t* texCoords = GetTexCoords(s);
+    
+    vertexCount = surface->numVerts;
+    vertexData  = new Vertex_t[vertexCount];
 
-    // Read vertices
-    modelFile.seekg(surfaceOffset + surface.offsetVertexCoords);
-
-    for (int i=0; i<surface.numVerts; ++i) {
-        MD3::Vertex_t vertex;
-        modelFile.read((char*)&vertex, sizeof(MD3::Vertex_t));
-
+    for (int i=0; i<vertexCount; ++i) {
         vertexData[i].coord = glm::vec3(
-            vertex.x,
-            vertex.y,
-            vertex.z
+            vertices[i].x,
+            vertices[i].y,
+            vertices[i].z
         ) * MD3_SCALE;
 
-        vertexData[i].normal = DecodeNormal(vertex.n);
-    }
-
-    // Read Texture coordinates
-    modelFile.seekg(surfaceOffset + surface.offsetTexCoords);
-
-    for (int i=0; i<surface.numVerts; ++i) {
-        MD3::TexCoord_t texCoord;
-        modelFile.read((char*)&texCoord, sizeof(MD3::TexCoord_t));
+        vertexData[i].normal = DecodeNormal(vertices[i].n);
 
         vertexData[i].texCoord = glm::vec2(
-            texCoord.u,
-            texCoord.v
+            texCoords[i].u,
+            texCoords[i].v
         );
     }
 }
 
-void MD3Model::GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount) {
-    assert(i < header.numSurfaces);
+void MD3Model::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) {
+    assert(s < header->numSurfaces);
 
-    MD3::Surface_t surface = surfaces[i];
-    int surfaceOffset = surfaceOffsets[i];
+    MD3::Surface_t*    surface = surfaces[s];
+    MD3::Triangle_t* triangles = GetTriangles(s);
     
-    indexData = new GLushort[surface.numTriangles*3];
-    triangleCount = surface.numTriangles;
+    triangleCount = surface->numTriangles;
+    indexData = new GLushort[3*triangleCount];
 
-    // Read triangles
-    modelFile.seekg(surfaceOffset + surface.offsetTriangles);
-
-    for (int t=0; t<surface.numTriangles; ++t) {
-        MD3::Triangle_t triangle;
-        modelFile.read((char*)&triangle, sizeof(MD3::Triangle_t));
-
-        // TODO: Dump these directly into indices instead of copying
-        indexData[3*t]   = (GLushort)triangle.a;
-        indexData[3*t+1] = (GLushort)triangle.b;
-        indexData[3*t+2] = (GLushort)triangle.c;
+    // Could probably re-index this and play with pointer arithmetic
+    // to do this in less lines
+    for (int i=0; i<triangleCount; ++i) {
+        indexData[3*i]   = (GLushort)triangles[i].a;
+        indexData[3*i+1] = (GLushort)triangles[i].b;
+        indexData[3*i+2] = (GLushort)triangles[i].c;
     }
 }
 
-MD3::Frame_t MD3Model::GetFrame(size_t i) {
-    assert(i < header.numFrames);
-    return frames[i];
-}
-
-BoundingBox MD3Model::GetFrameBB(size_t i) {
-    assert(i < header.numFrames);
-
-    MD3::Frame_t frame = frames[i];
-    return BoundingBox(frame.minBounds, frame.maxBounds);
+MD3::Frame_t* MD3Model::GetFrame(size_t f) {
+    assert(f < header->numFrames);
+    return frames[f];
 }

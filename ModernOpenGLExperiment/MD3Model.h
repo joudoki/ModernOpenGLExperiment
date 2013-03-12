@@ -1,6 +1,7 @@
 #ifndef MD3MODEL_H
 #define MD3MODEL_H
 
+#include <iostream>
 #include <fstream>
 #include <vector>
 
@@ -8,7 +9,7 @@
 #include "Rendering.h"
 #include "Mesh.h"
 
-#define MD3_MAGIC "IDP3"
+#define MD3_MAGIC 860898377
 #define MD3_VERSION 15
 #define MD3_MAX_QPATH 64
 
@@ -81,29 +82,35 @@ namespace MD3 {
         short x;
         short y;
         short z;
-        short n;
+        unsigned short n;
     } Vertex_t;
 };
 
 class MD3Model
 {
 private:
-    std::ifstream modelFile;
-    MD3::Header_t header;
+    char* buffer;
 
-    std::vector<MD3::Surface_t> surfaces;
-    std::vector<int> surfaceOffsets;
+    // Derived pointers into fileContents
+    MD3::Header_t* header;
+    std::vector<MD3::Frame_t*> frames;
+    std::vector<MD3::Tag_t*> tags;
+    std::vector<MD3::Surface_t*> surfaces;
 
-    std::vector<MD3::Frame_t> frames;
+    static glm::vec3 DecodeNormal(GLushort index);
 
-    MD3Model(const char* fileName);
-    
-    void ReadFrames();
-    void ReadSurfaces();
+    MD3Model(std::ifstream& infile);
 
-    static glm::vec3 DecodeNormal(short index);
+    // Functions to get pointers for a specific surface/frame
+
+    MD3::Vertex_t* GetVertices(size_t s, size_t f) const;
+    MD3::Shader_t* GetShaders(size_t s) const;
+    MD3::Triangle_t* GetTriangles(size_t s) const;
+    MD3::TexCoord_t* GetTexCoords(size_t s) const;
 
 public:
+    static MD3Model* LoadFromFile(const char* filename);
+
     ~MD3Model();
 
     // Final format of the loading
@@ -113,15 +120,30 @@ public:
         glm::vec2 texCoord;
     } Vertex_t;
 
-    static MD3Model* LoadFromFile(const char* fileName);
+    size_t GetSurfaceCount() const { return header->numSurfaces; }
 
-    size_t GetSurfaceCount() const { return header.numSurfaces; }
+    /**
+     * Retrieves from the internal format a list of formatted vertices 
+     * of the form MD3Model::Vertex_t.
+     * 
+     * s - The index of the surface to get the vertices from
+     * f - The index of the frame to get the vertices from
+     * vertexData  - Where to put the vertices
+     * vertexCount - How many vertices there are in vertexData
+     */
+    void GetVertices(size_t s, size_t f, Vertex_t*& vertexData, size_t& vertexCount);
 
-    void GetVertices(size_t i, Vertex_t*& vertexData, size_t& vertexCount);
-    void GetIndices(size_t i, GLushort*& indexData, size_t& triangleCount);
+    /**
+     * Retrieves from the internal format the list of indices making
+     * up the primitives needed to render this model.
+     *
+     * s - The index of the surface to retrieve indices from
+     * indexData     - Where to put the indices
+     * triangleCount - The number of primitives in indexData
+     */
+    void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount);
     
-    MD3::Frame_t GetFrame(size_t i);
-    BoundingBox GetFrameBB(size_t i);
+    MD3::Frame_t* GetFrame(size_t f);
 };
 
 #endif
