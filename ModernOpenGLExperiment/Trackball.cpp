@@ -37,8 +37,15 @@ glm::mat4 Trackball::GetRotationMatrix() const {
 
     glm::vec3 axis = glm::cross(dragStart, dragStop);
     
-    float dot   = glm::dot(dragStart, dragStop);
-    float angle = glm::acos(dot) * (180.0f / 3.14159f);
+    // Make sure that the input to the acos function is <= 1
+    // by normalizing the dot product of the two vectors
+    // (since the ScreenToTrackballCoordinates does not
+    //  guarantee normalized coordinates).
+    float mag     = glm::length(dragStart) * glm::length(dragStop);
+    float normDot = glm::dot(dragStart, dragStop) / mag;
+
+    //float dot   = glm::dot(dragStart, dragStop);
+    float angle = glm::acos(normDot) * (180.0f / 3.14159f);
     
     glm::mat4 rot = glm::rotate(glm::mat4(), angle, axis);
 
@@ -52,6 +59,7 @@ void Trackball::MouseUpdate(bool mouseDown, int i, int j) {
         if (!mouseDown) {
             // Update rotational matrix
             view = GetRotationMatrix();
+            printf("%f 0x%08x\n", view[0].x, view[0].x);
 
             // Stop Dragging
             dragging = false;
