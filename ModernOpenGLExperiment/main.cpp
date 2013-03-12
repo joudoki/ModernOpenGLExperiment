@@ -67,8 +67,8 @@ void setupOpenGL() {
 
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_FRONT);
 
     // Setup windowing transform
     glViewport(0, 0, 800, 600);
@@ -274,7 +274,7 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
 
     for (size_t i=0; i<vertexCount; ++i) {
         printf("%3d %10f %10f %10f | %10f %10f %10f | %10f %10f\n", i,
-            vertexData[i].coord.x,    vertexData[i].coord.y,    vertexData[i].coord.z,
+            vertexData[i].coord.y,    vertexData[i].coord.z,    vertexData[i].coord.x,
             vertexData[i].normal.x,   vertexData[i].normal.y,   vertexData[i].normal.z,
             vertexData[i].texCoord.x, vertexData[i].texCoord.y
         );
@@ -298,8 +298,6 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
     Mesh* mesh = new Mesh(TrianglesPrimitive, vertFmt, 3);
     mesh->SetVertexData(vertexCount, vertexCount*stride, vertexData);
     mesh->SetIndexData(UnsignedByteIndex, indexCount, indexCount*sizeof(GLushort), indexData);
-
-    //delete[] verts;
 
     delete[] vertexData;
     delete[] indexData;
@@ -348,7 +346,7 @@ int main(int argc, char** argv) {
     }
 
     // Load textures
-    Texture* tex = Texture::LoadFromFile("assets/rockammo2.tga");
+    Texture* tex = Texture::LoadFromFile("textures/rockammo2.tga");
     Texture::Bind(0, tex);
     
     // Setup uniforms that are constant over lifetime of shader
@@ -359,15 +357,13 @@ int main(int argc, char** argv) {
     //Mesh* axis = MakeAxisMesh(flatShade);
     //glm::mat4 axisModel = glm::scale(glm::mat4(), glm::vec3(2.0f));
 
-    /*
-    MD3Model* model = MD3Model::LoadFromFile("assets/rocketam.md3");
+    MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
     if (model == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
-    */
 
-    Mesh* ammoBox = MakeCubeMesh(textured); //LoadMD3Mesh(textured, model);
+    Mesh* ammoBox = LoadMD3Mesh(textured, model);
 
     //Mesh* aabb = MakeAABBMesh(flatShade);
     //glm::mat4 aabbModel = model->GetFrameBB(0).GetTransform();
@@ -375,12 +371,12 @@ int main(int argc, char** argv) {
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
     
-    glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -2.0f * model->GetFrame(0).radius));
     glm::mat4 viewRotate = glm::mat4();
 
     glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 1024.0f);
     
-    //delete model;
+    delete model;
 
     // MVP = P * V * M
 
