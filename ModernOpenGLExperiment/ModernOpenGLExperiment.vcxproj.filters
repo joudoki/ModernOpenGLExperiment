@@ -24,6 +24,9 @@
     <ClCompile Include="MD3Model.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="OBJModel.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl_core_3_3.h" />
@@ -52,6 +55,9 @@
       <Filter>Geometry</Filter>
     </ClInclude>
     <ClInclude Include="MD3Model.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="OBJModel.h">
       <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
