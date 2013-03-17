@@ -9,6 +9,7 @@
 #include "Texture.h"
 
 #include "MD3Model.h"
+#include "OBJModel.h"
 
 #include "Trackball.h"
 
@@ -319,9 +320,21 @@ void setup(int width, int height) {
     printf("  [GL_VENDOR]:     %s;\n", glGetString(GL_VENDOR));
     printf("  [GL_RENDERER]:   %s;\n", glGetString(GL_RENDERER));
     printf("  [GL_VERSION]:    %s;\n", glGetString(GL_VERSION));
+
 }
 
 int main(int argc, char** argv) {
+    OBJModel* model = OBJModel::LoadFromFile("models/cube.obj");
+
+    MD3Model::Vertex_t* vertices;
+    size_t vertexCount;
+
+    model->GetVertices(0, vertices, vertexCount);
+
+    delete model;
+    return EXIT_SUCCESS;
+
+
     int width = 800, height = 600;
     setup(width, height);
 
@@ -345,17 +358,20 @@ int main(int argc, char** argv) {
     Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
+    /*MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
 
     if (model == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
-
     float cameraDistance = 2.0f * model->GetFrame(0)->radius;
     Mesh* ammoBox = LoadMD3Mesh(textureShader, model);
+    */
 
-    delete model;
+    float cameraDistance = 4.0f;
+    Mesh* ammoBox = MakeCubeMesh(textureShader);
+
+    //delete model;
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
