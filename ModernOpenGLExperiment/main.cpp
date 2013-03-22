@@ -195,22 +195,6 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
 
     indexCount = triangleCount * 3;
 
-    for (size_t i=0; i<vertexCount; ++i) {
-        printf("%3d %10f %10f %10f | %10f %10f %10f | %10f %10f\n", i,
-            vertexData[i].coord.x,    vertexData[i].coord.y,    vertexData[i].coord.z,
-            vertexData[i].normal.x,   vertexData[i].normal.y,   vertexData[i].normal.z,
-            vertexData[i].texCoord.x, vertexData[i].texCoord.y
-        );
-    }
-
-    for (size_t i=0; i<triangleCount; ++i) {
-        printf("%3d %6hd %6hd %6hd\n", i,
-            indexData[3*i],
-            indexData[3*i+1],
-            indexData[3*i+2]
-        );
-    }
-
     GLsizei stride = 8*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
         {0, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
@@ -235,22 +219,6 @@ Mesh* LoadOBJMesh(Program* program, OBJModel* model) {
     model->GetVertices(0, vertexData, vertexCount);
     model->GetIndices(0,  indexData,  triangleCount);
     indexCount = triangleCount * 3;
-
-    for (size_t i=0; i<vertexCount; ++i) {
-        printf("%3d %10f %10f %10f | %10f %10f %10f | %10f %10f\n", i,
-            vertexData[i].coord.x,    vertexData[i].coord.y,    vertexData[i].coord.z,
-            vertexData[i].normal.x,   vertexData[i].normal.y,   vertexData[i].normal.z,
-            vertexData[i].texCoord.x, vertexData[i].texCoord.y
-        );
-    }
-
-    for (size_t i=0; i<triangleCount; ++i) {
-        printf("%3d %6hd %6hd %6hd\n", i,
-            indexData[3*i],
-            indexData[3*i+1],
-            indexData[3*i+2]
-        );
-    }
 
     GLsizei stride = 8*sizeof(GLfloat);
     VertexAttributeBinding_t vertFmt[] = {
@@ -306,7 +274,7 @@ int main(int argc, char** argv) {
     }
 
     // Load textures
-    Texture* texture0 = Texture::LoadFromFile("textures/rockammo.tga");
+    Texture* texture0 = Texture::LoadFromFile("textures/railgun1.tga");
     Texture::Bind(0, texture0);
     
     // Setup uniforms that are constant over lifetime of shader
@@ -314,7 +282,7 @@ int main(int argc, char** argv) {
     Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
+    MD3Model* model = MD3Model::LoadFromFile("models/railgun.md3");
 
     if (model == NULL) {
         glfwTerminate();

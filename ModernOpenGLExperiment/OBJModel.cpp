@@ -28,35 +28,30 @@ OBJModel::OBJModel(std::ifstream& infile) {
         if (cmd.size() == 0 || cmd[0] == '#')
             continue;
 
-        // Parse rest of command
-        std::cout << cmd << " ";
-
         glm::vec3 vec3;
         glm::vec2 vec2;
 
         if (cmd == "v") {
+            // Vertex (x,y,z)
             vertices.push_back(ReadVec3(iss));
-
-            vec3 = *(vertices.end()-1);
-            std::cout << vec3[0] << " " << vec3[1] << " " << vec3[2];
         } else if (cmd == "vn") {
+            // Vertex Normal (x,y,z)
             normals.push_back(ReadVec3(iss));
-
-            vec3 = *(normals.end()-1);
-            std::cout << vec3[0] << " " << vec3[1] << " " << vec3[2];
         } else if (cmd == "vt") {
+            // Vertex Texture Coordinate (u,v)
             texCoords.push_back(ReadVec2(iss));
-
-            vec2 = *(texCoords.end()-1);
-            std::cout << vec2[0] << " " << vec2[1];
         } else if (cmd == "g") {
-            iss >> cmd;
-            std::cout << cmd;
+            // Object (name)
+            // Do nothing for now
+            // iss >> cmd;
         } else if (cmd == "s") {
-            int surfaceNum;
-            iss >> surfaceNum;
-            std::cout << surfaceNum;
+            // Smoothing Group s
+            //int surfaceNum;
+            //iss >> surfaceNum;
+            //std::cout << surfaceNum;
         } else if (cmd == "f") {
+            // Face v/vt/vn v/vt/vn v/vt/vn
+
             OBJ::Face_t face;
 
             int index;
@@ -69,17 +64,8 @@ OBJModel::OBJModel(std::ifstream& infile) {
                 }
             }
 
-            std::cout << face.ids[0] << '/' << face.ids[1] << '/' << face.ids[2] << ' '
-                      << face.ids[3] << '/' << face.ids[4] << '/' << face.ids[5] << ' '
-                      << face.ids[6] << '/' << face.ids[7] << '/' << face.ids[8];
-
             faces.push_back(face);
-        } else {
-            // ????
-            std::cout << "???";
         }
-
-        std::cout << std::endl;
     }
 }
 
