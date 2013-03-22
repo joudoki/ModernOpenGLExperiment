@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -26,8 +27,8 @@ private:
     std::vector<OBJ::Face_t> faces;
 
     // Helper loading functions
-    glm::vec3 ReadVec3(std::ifstream& infile) const;
-    glm::vec2 ReadVec2(std::ifstream& infile) const;
+    glm::vec3 ReadVec3(std::istream& infile) const;
+    glm::vec2 ReadVec2(std::istream& infile) const;
 
     OBJModel(std::ifstream& inFile);
 

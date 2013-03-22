@@ -184,12 +184,12 @@ COORD( 1.0f,  1.0f,  1.0f, 1.0f, 1.0f)  // 7
 #undef COORD
 
     GLubyte indexData[] = {
-          0,   1,  2,   1,  3,  2,
-          4,   5,  6,   5,  7,  6,
-          8,   9, 10,   9, 11, 10,
-          12, 13, 14,  13, 15, 14,
-          16, 17, 18,  17, 19, 18,
-          20, 21, 22,  21, 23, 22
+         0,  1,  2,   1,  3,  2,
+         4,  5,  6,   5,  7,  6,
+         8,  9, 10,   9, 11, 10,
+        12, 13, 14,  13, 15, 14,
+        16, 17, 18,  17, 19, 18,
+        20, 21, 22,  21, 23, 22
     };
     GLuint triangleCount = 12;
     GLuint indexCount = 3*triangleCount;
@@ -299,7 +299,48 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
 
     Mesh* mesh = new Mesh(PrimitiveType::TrianglesPrimitive, vertFmt, 3);
     mesh->SetVertexData(vertexCount, vertexCount*stride, vertexData);
-    mesh->SetIndexData(IndexType::UnsignedByteIndex, indexCount, indexCount*sizeof(GLushort), indexData);
+    mesh->SetIndexData(IndexType::UnsignedShortIndex, indexCount, indexCount*sizeof(GLushort), indexData);
+
+    delete[] vertexData;
+    delete[] indexData;
+
+    return mesh;
+}
+Mesh* LoadOBJMesh(Program* program, OBJModel* model) {
+    MD3Model::Vertex_t* vertexData = NULL;
+    GLushort* indexData = NULL;
+    size_t vertexCount, triangleCount, indexCount;
+
+    model->GetVertices(0, vertexData, vertexCount);
+    model->GetIndices(0,  indexData,  triangleCount);
+    indexCount = triangleCount * 3;
+
+    for (size_t i=0; i<vertexCount; ++i) {
+        printf("%3d %10f %10f %10f | %10f %10f %10f | %10f %10f\n", i,
+            vertexData[i].coord.x,    vertexData[i].coord.y,    vertexData[i].coord.z,
+            vertexData[i].normal.x,   vertexData[i].normal.y,   vertexData[i].normal.z,
+            vertexData[i].texCoord.x, vertexData[i].texCoord.y
+        );
+    }
+
+    for (size_t i=0; i<triangleCount; ++i) {
+        printf("%3d %6hd %6hd %6hd\n", i,
+            indexData[3*i],
+            indexData[3*i+1],
+            indexData[3*i+2]
+        );
+    }
+
+    GLsizei stride = 8*sizeof(GLfloat);
+    VertexAttributeBinding_t vertFmt[] = {
+        {0, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
+        {1, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))},
+        {2, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6*sizeof(GLfloat))}
+    };
+
+    Mesh* mesh = new Mesh(PrimitiveType::TrianglesPrimitive, vertFmt, 3);
+    mesh->SetVertexData(vertexCount, vertexCount*stride, vertexData);
+    mesh->SetIndexData(IndexType::UnsignedShortIndex, indexCount, indexCount*sizeof(GLushort), indexData);
 
     delete[] vertexData;
     delete[] indexData;
@@ -324,17 +365,6 @@ void setup(int width, int height) {
 }
 
 int main(int argc, char** argv) {
-    OBJModel* model = OBJModel::LoadFromFile("models/cube.obj");
-
-    MD3Model::Vertex_t* vertices;
-    size_t vertexCount;
-
-    model->GetVertices(0, vertices, vertexCount);
-
-    delete model;
-    return EXIT_SUCCESS;
-
-
     int width = 800, height = 600;
     setup(width, height);
 
@@ -344,13 +374,18 @@ int main(int argc, char** argv) {
         readFile("glsl/textured.frag")
     );
 
-    if (textureShader == NULL) {
+    Program* flatShader = MakeProgram(
+        readFile("glsl/flatShade.vert"),
+        readFile("glsl/flatShade.frag")
+    );
+
+    if (textureShader == NULL || flatShader == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
     // Load textures
-    Texture* texture0 = Texture::LoadFromFile("textures/rockammo2.tga");
+    Texture* texture0 = Texture::LoadFromFile("textures/rockammo.tga");
     Texture::Bind(0, texture0);
     
     // Setup uniforms that are constant over lifetime of shader
@@ -358,7 +393,7 @@ int main(int argc, char** argv) {
     Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    /*MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
+    MD3Model* model = MD3Model::LoadFromFile("models/rocketam.md3");
 
     if (model == NULL) {
         glfwTerminate();
@@ -366,12 +401,9 @@ int main(int argc, char** argv) {
     }
     float cameraDistance = 2.0f * model->GetFrame(0)->radius;
     Mesh* ammoBox = LoadMD3Mesh(textureShader, model);
-    */
+    Mesh* axis    = MakeAxisMesh(flatShader);
 
-    float cameraDistance = 4.0f;
-    Mesh* ammoBox = MakeCubeMesh(textureShader);
-
-    //delete model;
+    delete model;
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
@@ -407,6 +439,10 @@ int main(int argc, char** argv) {
             Program::SetUniform(textureShader->GetUniform("transform"), viewClip);
             ammoBox->Render();
 
+            flatShader->Bind();
+            Program::SetUniform(flatShader->GetUniform("transform"), viewClip);
+            axis->Render();
+
             glfwSwapBuffers();
             lastTime = time;
         }
@@ -414,7 +450,11 @@ int main(int argc, char** argv) {
 
     // Cleanup
     delete ammoBox;
+    delete axis;
+
     delete textureShader;
+    delete flatShader;
+
     delete texture0;
     
     glfwTerminate();

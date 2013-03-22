@@ -1,49 +1,60 @@
 #include "OBJModel.h"
 
-glm::vec3 OBJModel::ReadVec3(std::ifstream& infile) const {
+glm::vec3 OBJModel::ReadVec3(std::istream& infile) const {
     float x,y,z;
     infile >> x >> y >> z;
     return glm::vec3(x,y,z);
 }
 
-glm::vec2 OBJModel::ReadVec2(std::ifstream& infile) const {
+glm::vec2 OBJModel::ReadVec2(std::istream& infile) const {
     float x,y;
     infile >> x >> y;
     return glm::vec2(x,y);
 }
 
 OBJModel::OBJModel(std::ifstream& infile) {
-    while (infile) {
-        std::string cmd;
-        infile >> cmd;
+    std::string line;
 
-        // Skip rest of the line
-        if (cmd[0] == '#') {
-            std::getline(infile, cmd);
+    while (infile) {
+        std::getline(infile, line);
+        std::istringstream iss(line);
+
+        if (!iss)
             continue;
-        }
+        
+        std::string cmd;
+        iss >> cmd;
+
+        if (cmd.size() == 0 || cmd[0] == '#')
+            continue;
 
         // Parse rest of command
         std::cout << cmd << " ";
 
+        glm::vec3 vec3;
+        glm::vec2 vec2;
+
         if (cmd == "v") {
-            vertices.push_back(ReadVec3(infile));
-            glm::vec3 vec = *(vertices.end()-1);
-            std::cout << vec[0] << " " << vec[1] << " " << vec[2];
+            vertices.push_back(ReadVec3(iss));
+
+            vec3 = *(vertices.end()-1);
+            std::cout << vec3[0] << " " << vec3[1] << " " << vec3[2];
         } else if (cmd == "vn") {
-            normals.push_back(ReadVec3(infile));
-            glm::vec3 vec = *(normals.end()-1);
-            std::cout << vec[0] << " " << vec[1] << " " << vec[2];
+            normals.push_back(ReadVec3(iss));
+
+            vec3 = *(normals.end()-1);
+            std::cout << vec3[0] << " " << vec3[1] << " " << vec3[2];
         } else if (cmd == "vt") {
-            texCoords.push_back(ReadVec2(infile));
-            glm::vec2 vec = *(texCoords.end()-1);
-            std::cout << vec[0] << " " << vec[1];
+            texCoords.push_back(ReadVec2(iss));
+
+            vec2 = *(texCoords.end()-1);
+            std::cout << vec2[0] << " " << vec2[1];
         } else if (cmd == "g") {
-            infile >> cmd;
+            iss >> cmd;
             std::cout << cmd;
         } else if (cmd == "s") {
             int surfaceNum;
-            infile >> surfaceNum;
+            iss >> surfaceNum;
             std::cout << surfaceNum;
         } else if (cmd == "f") {
             OBJ::Face_t face;
@@ -52,15 +63,20 @@ OBJModel::OBJModel(std::ifstream& infile) {
             for (int i=0; i<3; ++i) {
                 for (int j=0; j<3; ++j) {
                     if (j != 0)
-                        infile.get(); // skip /
-                    infile >> index;
+                        iss.get(); // skip /
+                    iss >> index;
                     face.ids[3*i+j] = index - 1;
                 }
             }
 
+            std::cout << face.ids[0] << '/' << face.ids[1] << '/' << face.ids[2] << ' '
+                      << face.ids[3] << '/' << face.ids[4] << '/' << face.ids[5] << ' '
+                      << face.ids[6] << '/' << face.ids[7] << '/' << face.ids[8];
+
             faces.push_back(face);
         } else {
             // ????
+            std::cout << "???";
         }
 
         std::cout << std::endl;
@@ -90,12 +106,17 @@ void OBJModel::GetVertices(size_t s, MD3Model::Vertex_t*& vertexData, size_t& ve
         int f  = v/3; // face
         int fv = v%3; // face vertex
 
+        // Faces are laid out in v/vt/vn order
         vertexData[v].coord    =  vertices[faces[f].ids[3*fv]];
-        vertexData[v].normal   =   normals[faces[f].ids[3*fv+1]];
-        vertexData[v].texCoord = texCoords[faces[f].ids[3*fv+2]];
+        vertexData[v].texCoord = texCoords[faces[f].ids[3*fv+1]];
+        vertexData[v].normal   =   normals[faces[f].ids[3*fv+2]];
     }
 }
 
 void OBJModel::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) {
+    triangleCount = faces.size();
+    indexData = new GLushort[3*triangleCount];
 
+    for (int i=0; i<3*triangleCount; ++i)
+        indexData[i] = i;
 }
