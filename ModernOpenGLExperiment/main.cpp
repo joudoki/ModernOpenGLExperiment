@@ -227,7 +227,7 @@ void setup(int width, int height) {
 
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
     int width = 800, height = 600;
     setup(width, height);
 
@@ -248,8 +248,13 @@ int main(int argc, char** argv) {
     }
 
     // Load textures
-    Texture* texture0 = Texture::LoadFromFile("textures/railgun1.tga");
-    Texture::Bind(0, texture0);
+    Texture* textures[] = {
+        Texture::LoadFromFile("textures/railgun1.tga"),
+        Texture::LoadFromFile("textures/railgun2.glow.tga"),
+        Texture::LoadFromFile("textures/railgun4.tga"),
+        Texture::LoadFromFile("textures/railgun3.tga")
+    };
+    size_t texCount = 4;
     
     // Setup uniforms that are constant over lifetime of shader
     textureShader->Bind();
@@ -263,7 +268,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    float cameraDistance = 36.0f; //model->GetFrame(0)->radius;
+    float cameraDistance = 48.0f; //model->GetFrame(0)->radius;
 
     std::vector<Mesh*> modelSurfs;
     for (size_t i=0; i<model->GetMeshCount(); ++i)
@@ -271,7 +276,7 @@ int main(int argc, char** argv) {
 
     delete model;
 
-    Mesh* axis    = MakeAxisMesh(flatShader);
+    Mesh* axis = MakeAxisMesh(flatShader);
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
@@ -298,6 +303,7 @@ int main(int argc, char** argv) {
         if (time - lastTime >= 1/60.0f) {
             // Update the transformation matrix
             viewRotate = trackball.GetRotationMatrix();
+
             glm::mat4 viewClip = project * viewTranslate * viewRotate;
             
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -306,8 +312,12 @@ int main(int argc, char** argv) {
             textureShader->Bind();
             Program::SetUniform(textureShader->GetUniform("transform"), viewClip);
 
-            for (auto it=modelSurfs.begin(); it!=modelSurfs.end(); ++it)
-                (*it)->Render();
+            for (size_t i=0; i<modelSurfs.size(); ++i) {
+                size_t texIndex = glm::min(texCount-1, i);
+
+                Texture::Bind(0, textures[texIndex]);
+                modelSurfs[i]->Render();
+            }
 
             flatShader->Bind();
             Program::SetUniform(flatShader->GetUniform("transform"), project * viewRotate);
@@ -327,7 +337,8 @@ int main(int argc, char** argv) {
     delete textureShader;
     delete flatShader;
 
-    delete texture0;
+    for (size_t i=0; i<texCount; ++i)
+        delete textures[i];
     
     glfwTerminate();
     return EXIT_SUCCESS;
