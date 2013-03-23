@@ -93,7 +93,7 @@ OBJModel* OBJModel::LoadFromFile(const char* filename) {
     return model;
 }
 
-void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) {
+void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const {
     assert(s < surfaces.size());
 
     OBJ::Surface_t surface = surfaces[s];
@@ -103,10 +103,10 @@ void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCo
 
     int v;
     for (size_t i=0; i<surface.faceCount; ++i) {
-        OBJ::Face_t& face = faces[surface.faceBegin + i];
+        const OBJ::Face_t& face = faces[surface.faceBegin + i];
 
         for (size_t j=0; j<3; ++j) {
-            OBJ::FaceVertex_t& faceVert = face.verts[j];
+            const OBJ::FaceVertex_t& faceVert = face.verts[j];
 
             // Calculate vertex index
             v = 3*i + j;
@@ -119,7 +119,7 @@ void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCo
     }
 }
 
-void OBJModel::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) {
+void OBJModel::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const {
     assert(s < surfaces.size());
 
     OBJ::Surface_t surface = surfaces[s];

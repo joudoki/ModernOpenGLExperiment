@@ -35,7 +35,7 @@ public:
      * vertexData  - Where to put the vertices
      * vertexCount - How many vertices there are in vertexData
      */
-    virtual void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) = 0;
+    virtual void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const = 0;
 
     /**
      * Retrieves from the internal format the list of indices making
@@ -45,7 +45,7 @@ public:
      * indexData     - Where to put the indices
      * triangleCount - The number of primitives in indexData
      */
-    virtual void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) = 0;
+    virtual void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const = 0;
 };
 
 #endif

@@ -108,7 +108,7 @@ MD3::TexCoord_t* MD3Model::GetTexCoords(size_t s) const {
     );
 }
 
-void MD3Model::GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount) {
+void MD3Model::GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount) const {
     assert(s < header->numSurfaces);
     assert(f < header->numFrames);
     
@@ -135,11 +135,11 @@ void MD3Model::GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t
     }
 }
 
-void MD3Model::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) {
+void MD3Model::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const {
     GetVertices(s, 0, vertexData, vertexCount);
 }
 
-void MD3Model::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) {
+void MD3Model::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const {
     assert(s < header->numSurfaces);
 
     MD3::Surface_t*    surface = surfaces[s];

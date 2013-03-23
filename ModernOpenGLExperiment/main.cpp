@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -185,7 +186,7 @@ Mesh* MakeAABBMesh(Program* program) {
     return mesh;
 }
 
-Mesh* LoadMesh(Program* program, ModelLoader* model, size_t meshIndex) {
+Mesh* LoadMesh(const Program* program, const ModelLoader* model, size_t meshIndex) {
     MeshVertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
     size_t vertexCount, triangleCount, indexCount;
@@ -209,6 +210,22 @@ Mesh* LoadMesh(Program* program, ModelLoader* model, size_t meshIndex) {
     delete[] indexData;
 
     return mesh;
+}
+
+void LoadModel(
+    const Program* program,
+    const ModelLoader* model,
+    const vector<string>& textureFiles,
+    vector<Mesh*>& meshes,
+    vector<Texture*>& textures
+) {
+    // Load all the meshes from the model file
+    for (size_t i=0; i<model->GetMeshCount(); ++i)
+        meshes.push_back(LoadMesh(program, model, i));
+
+    // Load the list of textures
+    for (auto it=textureFiles.begin(); it!=textureFiles.end(); ++it)
+        textures.push_back(Texture::LoadFromFile(it->c_str()));
 }
 
 void setup(int width, int height) {
@@ -246,15 +263,6 @@ int main(int argc, char* argv[]) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
-
-    // Load textures
-    Texture* textures[] = {
-        Texture::LoadFromFile("textures/railgun1.tga"),
-        Texture::LoadFromFile("textures/railgun2.glow.tga"),
-        Texture::LoadFromFile("textures/railgun4.tga"),
-        Texture::LoadFromFile("textures/railgun3.tga")
-    };
-    size_t texCount = 4;
     
     // Setup uniforms that are constant over lifetime of shader
     textureShader->Bind();
@@ -268,11 +276,18 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    float cameraDistance = 48.0f; //model->GetFrame(0)->radius;
+    string textureFiles[] = {
+        "textures/railgun1.tga",
+        "textures/railgun2.glow.tga",
+        "textures/railgun4.tga",
+        "textures/railgun3.tga"
+    };
 
-    std::vector<Mesh*> modelSurfs;
-    for (size_t i=0; i<model->GetMeshCount(); ++i)
-        modelSurfs.push_back(LoadMesh(textureShader, model, i));
+    vector<Mesh*> meshes;
+    vector<Texture*> textures;
+
+    LoadModel(textureShader, model, vector<string>(textureFiles, textureFiles + 4), meshes, textures);
+    float cameraDistance = 48.0f;
 
     delete model;
 
@@ -312,11 +327,11 @@ int main(int argc, char* argv[]) {
             textureShader->Bind();
             Program::SetUniform(textureShader->GetUniform("transform"), viewClip);
 
-            for (size_t i=0; i<modelSurfs.size(); ++i) {
-                size_t texIndex = glm::min(texCount-1, i);
+            for (size_t i=0; i<meshes.size(); ++i) {
+                size_t texIndex = glm::min(textures.size()-1, i);
 
                 Texture::Bind(0, textures[texIndex]);
-                modelSurfs[i]->Render();
+                meshes[i]->Render();
             }
 
             flatShader->Bind();
@@ -329,7 +344,7 @@ int main(int argc, char* argv[]) {
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
-    for (auto it=modelSurfs.begin(); it!=modelSurfs.end(); ++it)
+    for (auto it=meshes.begin(); it!=meshes.end(); ++it)
         delete (*it);
 
     delete axis;
@@ -337,7 +352,7 @@ int main(int argc, char* argv[]) {
     delete textureShader;
     delete flatShader;
 
-    for (size_t i=0; i<texCount; ++i)
+    for (size_t i=0; i<textures.size(); ++i)
         delete textures[i];
     
     glfwTerminate();

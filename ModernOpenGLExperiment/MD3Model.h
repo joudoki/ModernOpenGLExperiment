@@ -125,9 +125,9 @@ public:
      * vertexData  - Where to put the vertices
      * vertexCount - How many vertices there are in vertexData
      */
-    void GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount);
+    void GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount) const;
 
-    void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount);
+    void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const;
 
     /**
      * Retrieves from the internal format the list of indices making
@@ -137,7 +137,7 @@ public:
      * indexData     - Where to put the indices
      * triangleCount - The number of primitives in indexData
      */
-    void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount);
+    void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const;
     
     MD3::Frame_t* GetFrame(size_t f);
 };
