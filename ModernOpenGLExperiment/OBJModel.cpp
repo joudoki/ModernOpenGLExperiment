@@ -12,8 +12,10 @@ glm::vec2 OBJModel::ReadVec2(std::istream& infile) const {
     return glm::vec2(x,y);
 }
 
-OBJModel::OBJModel(std::ifstream& infile) {
+OBJModel::OBJModel(std::istream& infile) {
     std::string line;
+
+    OBJ::Surface_t surface = {0, 0, "Default"};
 
     while (infile) {
         std::getline(infile, line);
@@ -42,8 +44,13 @@ OBJModel::OBJModel(std::ifstream& infile) {
             texCoords.push_back(ReadVec2(iss));
         } else if (cmd == "g") {
             // Object (name)
-            // Do nothing for now
-            // iss >> cmd;
+            if (surface.faceCount > 0)
+                surfaces.push_back(surface);
+
+            iss >> surface.name;
+            surface.faceBegin += surface.faceCount;
+            surface.faceCount = 0;
+
         } else if (cmd == "s") {
             // Smoothing Group s
             //int surfaceNum;
@@ -60,17 +67,20 @@ OBJModel::OBJModel(std::ifstream& infile) {
                     if (j != 0)
                         iss.get(); // skip /
                     iss >> index;
-                    face.ids[3*i+j] = index - 1;
+                    face[3*i+j] = index - 1;
                 }
             }
 
+            ++surface.faceCount;
             faces.push_back(face);
         }
     }
+
+    if (surface.faceCount > 0)
+        surfaces.push_back(surface);
 }
 
-OBJModel::~OBJModel() {
-}
+OBJModel::~OBJModel() {}
 
 OBJModel* OBJModel::LoadFromFile(const char* filename) {
     std::ifstream infile(filename);
@@ -84,25 +94,39 @@ OBJModel* OBJModel::LoadFromFile(const char* filename) {
 }
 
 void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) {
-    vertexCount = 3*faces.size();
+    assert(s < surfaces.size());
+
+    OBJ::Surface_t surface = surfaces[s];
+
+    vertexCount = 3*surface.faceCount;
     vertexData = new MeshVertex_t[vertexCount];
 
-    // i - the vertex number
-    for (int v=0; v<vertexCount; ++v) {
-        int f  = v/3; // face
-        int fv = v%3; // face vertex
+    int v;
+    for (size_t i=0; i<surface.faceCount; ++i) {
+        OBJ::Face_t& face = faces[surface.faceBegin + i];
 
-        // Faces are laid out in v/vt/vn order
-        vertexData[v].coord    =  vertices[faces[f].ids[3*fv]];
-        vertexData[v].texCoord = texCoords[faces[f].ids[3*fv+1]];
-        vertexData[v].normal   =   normals[faces[f].ids[3*fv+2]];
+        for (size_t j=0; j<3; ++j) {
+            OBJ::FaceVertex_t& faceVert = face.verts[j];
+
+            // Calculate vertex index
+            v = 3*i + j;
+            
+            // Faces are laid out in v/vt/vn order
+            vertexData[v].coord    =  vertices[faceVert.vertex];
+            vertexData[v].texCoord = texCoords[faceVert.texCoord];
+            vertexData[v].normal   =   normals[faceVert.normal];
+        }
     }
 }
 
 void OBJModel::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) {
-    triangleCount = faces.size();
+    assert(s < surfaces.size());
+
+    OBJ::Surface_t surface = surfaces[s];
+
+    triangleCount = surface.faceCount;
     indexData = new GLushort[3*triangleCount];
 
-    for (int i=0; i<3*triangleCount; ++i)
+    for (size_t i=0; i<3*triangleCount; ++i)
         indexData[i] = i;
 }

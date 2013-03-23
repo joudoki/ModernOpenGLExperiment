@@ -69,7 +69,7 @@ void setupOpenGL() {
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
 
     // Setup windowing transform
     glViewport(0, 0, 800, 600);
@@ -211,13 +211,13 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
 
     return mesh;
 }
-Mesh* LoadOBJMesh(Program* program, OBJModel* model) {
+Mesh* LoadMesh(Program* program, ModelLoader* model) {
     MeshVertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
     size_t vertexCount, triangleCount, indexCount;
 
-    model->GetVertices(0, vertexData, vertexCount);
-    model->GetIndices(0,  indexData,  triangleCount);
+    model->GetVertices(1, vertexData, vertexCount);
+    model->GetIndices(1,  indexData,  triangleCount);
     indexCount = triangleCount * 3;
 
     GLsizei stride = 8*sizeof(GLfloat);
@@ -274,7 +274,7 @@ int main(int argc, char** argv) {
     }
 
     // Load textures
-    Texture* texture0 = Texture::LoadFromFile("textures/railgun1.tga");
+    Texture* texture0 = Texture::LoadFromFile("textures/rockammo.tga");
     Texture::Bind(0, texture0);
     
     // Setup uniforms that are constant over lifetime of shader
@@ -282,15 +282,16 @@ int main(int argc, char** argv) {
     Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    MD3Model* model = MD3Model::LoadFromFile("models/railgun.md3");
+    //MD3Model* model = MD3Model::LoadFromFile("models/railgun.md3");
+    ModelLoader* model = OBJModel::LoadFromFile("models/rocketam.obj");
 
     if (model == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    float cameraDistance = 2.0f * model->GetFrame(0)->radius;
-    Mesh* ammoBox = LoadMD3Mesh(textureShader, model);
+    float cameraDistance = 36.0f; // * model->GetFrame(0)->radius;
+    Mesh* ammoBox = LoadMesh(textureShader, model);
 
     delete model;
 
