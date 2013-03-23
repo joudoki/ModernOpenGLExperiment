@@ -69,7 +69,7 @@ void setupOpenGL() {
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    glCullFace(GL_FRONT);
 
     // Setup windowing transform
     glViewport(0, 0, 800, 600);
@@ -185,39 +185,13 @@ Mesh* MakeAABBMesh(Program* program) {
     return mesh;
 }
 
-Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
+Mesh* LoadMesh(Program* program, ModelLoader* model, size_t meshIndex) {
     MeshVertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
     size_t vertexCount, triangleCount, indexCount;
 
-    model->GetVertices(0, 0, vertexData, vertexCount);
-    model->GetIndices(0,     indexData,  triangleCount);
-
-    indexCount = triangleCount * 3;
-
-    GLsizei stride = 8*sizeof(GLfloat);
-    VertexAttributeBinding_t vertFmt[] = {
-        {0, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0)},
-        {1, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3*sizeof(GLfloat))},
-        {2, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6*sizeof(GLfloat))}
-    };
-
-    Mesh* mesh = new Mesh(PrimitiveType::TrianglesPrimitive, vertFmt, 3);
-    mesh->SetVertexData(vertexCount, vertexCount*stride, vertexData);
-    mesh->SetIndexData(IndexType::UnsignedShortIndex, indexCount, indexCount*sizeof(GLushort), indexData);
-
-    delete[] vertexData;
-    delete[] indexData;
-
-    return mesh;
-}
-Mesh* LoadMesh(Program* program, ModelLoader* model) {
-    MeshVertex_t* vertexData = NULL;
-    GLushort* indexData = NULL;
-    size_t vertexCount, triangleCount, indexCount;
-
-    model->GetVertices(1, vertexData, vertexCount);
-    model->GetIndices(1,  indexData,  triangleCount);
+    model->GetVertices(meshIndex, vertexData, vertexCount);
+    model->GetIndices(meshIndex,  indexData,  triangleCount);
     indexCount = triangleCount * 3;
 
     GLsizei stride = 8*sizeof(GLfloat);
@@ -274,7 +248,7 @@ int main(int argc, char** argv) {
     }
 
     // Load textures
-    Texture* texture0 = Texture::LoadFromFile("textures/rockammo.tga");
+    Texture* texture0 = Texture::LoadFromFile("textures/railgun1.tga");
     Texture::Bind(0, texture0);
     
     // Setup uniforms that are constant over lifetime of shader
@@ -282,16 +256,18 @@ int main(int argc, char** argv) {
     Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    //MD3Model* model = MD3Model::LoadFromFile("models/railgun.md3");
-    ModelLoader* model = OBJModel::LoadFromFile("models/rocketam.obj");
+    ModelLoader* model = MD3Model::LoadFromFile("models/railgun.md3");
 
     if (model == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    float cameraDistance = 36.0f; // * model->GetFrame(0)->radius;
-    Mesh* ammoBox = LoadMesh(textureShader, model);
+    float cameraDistance = 36.0f; //model->GetFrame(0)->radius;
+
+    std::vector<Mesh*> modelSurfs;
+    for (size_t i=0; i<model->GetMeshCount(); ++i)
+        modelSurfs.push_back(LoadMesh(textureShader, model, i));
 
     delete model;
 
@@ -329,7 +305,9 @@ int main(int argc, char** argv) {
             // Render model
             textureShader->Bind();
             Program::SetUniform(textureShader->GetUniform("transform"), viewClip);
-            ammoBox->Render();
+
+            for (auto it=modelSurfs.begin(); it!=modelSurfs.end(); ++it)
+                (*it)->Render();
 
             flatShader->Bind();
             Program::SetUniform(flatShader->GetUniform("transform"), project * viewRotate);
@@ -341,7 +319,9 @@ int main(int argc, char** argv) {
     } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
 
     // Cleanup
-    delete ammoBox;
+    for (auto it=modelSurfs.begin(); it!=modelSurfs.end(); ++it)
+        delete (*it);
+
     delete axis;
 
     delete textureShader;
