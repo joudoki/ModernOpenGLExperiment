@@ -108,7 +108,7 @@ MD3::TexCoord_t* MD3Model::GetTexCoords(size_t s) const {
     );
 }
 
-void MD3Model::GetVertices(size_t s, size_t f, Vertex_t*& vertexData, size_t& vertexCount) {
+void MD3Model::GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount) {
     assert(s < header->numSurfaces);
     assert(f < header->numFrames);
     
@@ -117,7 +117,7 @@ void MD3Model::GetVertices(size_t s, size_t f, Vertex_t*& vertexData, size_t& ve
     MD3::TexCoord_t* texCoords = GetTexCoords(s);
     
     vertexCount = surface->numVerts;
-    vertexData  = new Vertex_t[vertexCount];
+    vertexData  = new MeshVertex_t[vertexCount];
 
     for (int i=0; i<vertexCount; ++i) {
         vertexData[i].coord = glm::vec3(

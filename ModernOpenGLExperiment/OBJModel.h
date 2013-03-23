@@ -48,7 +48,7 @@ public:
      * vertexData  - Where to put the vertices
      * vertexCount - How many vertices there are in vertexData
      */
-    void GetVertices(size_t s, MD3Model::Vertex_t*& vertexData, size_t& vertexCount);
+    void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount);
 
     /**
      * Retrieves from the internal format the list of indices making

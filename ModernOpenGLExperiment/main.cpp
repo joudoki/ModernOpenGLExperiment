@@ -186,7 +186,7 @@ Mesh* MakeAABBMesh(Program* program) {
 }
 
 Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
-    MD3Model::Vertex_t* vertexData = NULL;
+    MeshVertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
     size_t vertexCount, triangleCount, indexCount;
 
@@ -212,7 +212,7 @@ Mesh* LoadMD3Mesh(Program* program, MD3Model* model) {
     return mesh;
 }
 Mesh* LoadOBJMesh(Program* program, OBJModel* model) {
-    MD3Model::Vertex_t* vertexData = NULL;
+    MeshVertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
     size_t vertexCount, triangleCount, indexCount;
 
@@ -331,7 +331,7 @@ int main(int argc, char** argv) {
             ammoBox->Render();
 
             flatShader->Bind();
-            Program::SetUniform(flatShader->GetUniform("transform"), viewClip);
+            Program::SetUniform(flatShader->GetUniform("transform"), project * viewRotate);
             axis->Render();
 
             glfwSwapBuffers();

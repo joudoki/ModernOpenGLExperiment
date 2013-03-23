@@ -16,6 +16,16 @@
 #include <string>
 
 /**
+ * Vertex_t
+ * A semi-standard format for mesh vertex data (for now)
+ */
+typedef struct {
+    glm::vec3 coord;
+    glm::vec3 normal;
+    glm::vec2 texCoord;
+} MeshVertex_t;
+
+/**
  * ShaderType - Specifies the type of shader that a Shader object holds.
  */
 namespace ShaderType {

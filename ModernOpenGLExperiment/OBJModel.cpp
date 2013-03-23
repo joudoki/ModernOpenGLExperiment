@@ -83,9 +83,9 @@ OBJModel* OBJModel::LoadFromFile(const char* filename) {
     return model;
 }
 
-void OBJModel::GetVertices(size_t s, MD3Model::Vertex_t*& vertexData, size_t& vertexCount) {
+void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) {
     vertexCount = 3*faces.size();
-    vertexData = new MD3Model::Vertex_t[vertexCount];
+    vertexData = new MeshVertex_t[vertexCount];
 
     // i - the vertex number
     for (int v=0; v<vertexCount; ++v) {

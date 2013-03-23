@@ -113,13 +113,6 @@ public:
 
     ~MD3Model();
 
-    // Final format of the loading
-    typedef struct {
-        glm::vec3 coord;
-        glm::vec3 normal;
-        glm::vec2 texCoord;
-    } Vertex_t;
-
     size_t GetSurfaceCount() const { return header->numSurfaces; }
 
     /**
@@ -131,7 +124,7 @@ public:
      * vertexData  - Where to put the vertices
      * vertexCount - How many vertices there are in vertexData
      */
-    void GetVertices(size_t s, size_t f, Vertex_t*& vertexData, size_t& vertexCount);
+    void GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount);
 
     /**
      * Retrieves from the internal format the list of indices making
