@@ -22,10 +22,10 @@
       <Filter>Geometry</Filter>
     </ClCompile>
     <ClCompile Include="MD3Model.cpp">
-      <Filter>Utility</Filter>
+      <Filter>Utility\ModelLoader</Filter>
     </ClCompile>
     <ClCompile Include="OBJModel.cpp">
-      <Filter>Utility</Filter>
+      <Filter>Utility\ModelLoader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,11 +54,14 @@
     <ClInclude Include="BoundingBox.h">
       <Filter>Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="MD3Model.h">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="OBJModel.h">
-      <Filter>Utility</Filter>
+      <Filter>Utility\ModelLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="MD3Model.h">
+      <Filter>Utility\ModelLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Utility\ModelLoader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +76,9 @@
     </Filter>
     <Filter Include="Geometry">
       <UniqueIdentifier>{a54236b6-ba52-4a02-88b6-21cdd7a54d33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\ModelLoader">
+      <UniqueIdentifier>{3626419a-c29e-4151-9efb-10e55db14637}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

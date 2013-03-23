@@ -83,6 +83,7 @@
     <ClInclude Include="MD3Model.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="OBJModel.h" />
     <ClInclude Include="Program.h" />
     <ClInclude Include="Rendering.h" />
