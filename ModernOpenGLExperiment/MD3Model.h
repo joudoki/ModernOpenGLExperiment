@@ -5,11 +5,11 @@
 #include <fstream>
 #include <vector>
 
-#include "BoundingBox.h"
 #include "Rendering.h"
-#include "Mesh.h"
+#include "BoundingBox.h"
+#include "ModelLoader.h"
 
-#define MD3_MAGIC 860898377
+#define MD3_MAGIC 860898377 // TODO-MAYBE: Deal with endian-ness
 #define MD3_VERSION 15
 #define MD3_MAX_QPATH 64
 
@@ -86,7 +86,7 @@ namespace MD3 {
     } Vertex_t;
 };
 
-class MD3Model {
+class MD3Model : public ModelLoader {
 private:
     char* buffer;
 
@@ -112,7 +112,9 @@ public:
 
     ~MD3Model();
 
-    size_t GetSurfaceCount() const { return header->numSurfaces; }
+    bool IsValid() const { return buffer != NULL; }
+
+    size_t GetMeshCount() const { return header->numSurfaces; }
 
     /**
      * Retrieves from the internal format a list of formatted vertices 
@@ -124,6 +126,8 @@ public:
      * vertexCount - How many vertices there are in vertexData
      */
     void GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount);
+
+    void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount);
 
     /**
      * Retrieves from the internal format the list of indices making

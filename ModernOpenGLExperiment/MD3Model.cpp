@@ -60,7 +60,7 @@ MD3Model* MD3Model::LoadFromFile(const char* filename) {
     infile.read(reinterpret_cast<char*>(&magic),   sizeof(int));
     infile.read(reinterpret_cast<char*>(&version), sizeof(int));
 
-    if (magic != 860898377 || version != 15) {
+    if (magic != MD3_MAGIC || version != MD3_VERSION) {
         infile.close();
         
         fprintf(stderr, "Got unexpected file format %d v%d, expecting %d v%d\n", 
@@ -133,6 +133,10 @@ void MD3Model::GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t
             texCoords[i].v
         );
     }
+}
+
+void MD3Model::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) {
+    GetVertices(s, 0, vertexData, vertexCount);
 }
 
 void MD3Model::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) {
