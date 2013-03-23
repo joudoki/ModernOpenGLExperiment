@@ -33,8 +33,7 @@ namespace OBJ {
     } Surface_t;
 };
 
-class OBJModel : public ModelLoader
-{
+class OBJModel : public ModelLoader {
 private:
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;

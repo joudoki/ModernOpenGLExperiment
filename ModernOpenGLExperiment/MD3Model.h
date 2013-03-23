@@ -86,8 +86,7 @@ namespace MD3 {
     } Vertex_t;
 };
 
-class MD3Model
-{
+class MD3Model {
 private:
     char* buffer;
 
