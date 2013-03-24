@@ -12,11 +12,38 @@ glm::vec2 OBJModel::ReadVec2(std::istream& infile) const {
     return glm::vec2(x,y);
 }
 
+OBJ::FaceVertex_t OBJModel::ReadFaceVertex(std::istream& infile) const {
+    OBJ::FaceVertex_t fv;
+
+    // Skip '/' between components of vector
+    char c;
+
+    infile 
+        >> fv.vertex >> c
+        >> fv.texCoord >> c
+        >> fv.normal;
+
+    // Decrement the indices because they're 1-based
+    --fv.vertex;
+    --fv.texCoord;
+    --fv.normal;
+
+    return fv;
+}
+
+OBJ::Face_t OBJModel::ReadFace(std::istream& infile) const {
+    OBJ::Face_t face;
+
+    for (int i=0; i<3; ++i)
+        face.verts[i] = ReadFaceVertex(infile);
+
+    return face;
+}
+
 OBJModel::OBJModel(std::istream& infile) {
-    std::string line;
-
     OBJ::Surface_t surface = {0, 0, "Default"};
-
+    
+    std::string line;
     while (infile) {
         std::getline(infile, line);
         std::istringstream iss(line);
@@ -27,11 +54,9 @@ OBJModel::OBJModel(std::istream& infile) {
         std::string cmd;
         iss >> cmd;
 
+        // Skip comments
         if (cmd.size() == 0 || cmd[0] == '#')
             continue;
-
-        glm::vec3 vec3;
-        glm::vec2 vec2;
 
         if (cmd == "v") {
             // Vertex (x,y,z)
@@ -50,7 +75,6 @@ OBJModel::OBJModel(std::istream& infile) {
             iss >> surface.name;
             surface.faceBegin += surface.faceCount;
             surface.faceCount = 0;
-
         } else if (cmd == "s") {
             // Smoothing Group s
             //int surfaceNum;
@@ -58,21 +82,8 @@ OBJModel::OBJModel(std::istream& infile) {
             //std::cout << surfaceNum;
         } else if (cmd == "f") {
             // Face v/vt/vn v/vt/vn v/vt/vn
-
-            OBJ::Face_t face;
-
-            int index;
-            for (int i=0; i<3; ++i) {
-                for (int j=0; j<3; ++j) {
-                    if (j != 0)
-                        iss.get(); // skip /
-                    iss >> index;
-                    face[3*i+j] = index - 1;
-                }
-            }
-
             ++surface.faceCount;
-            faces.push_back(face);
+            faces.push_back(ReadFace(iss));
         }
     }
 
@@ -93,7 +104,7 @@ OBJModel* OBJModel::LoadFromFile(const char* filename) {
     return model;
 }
 
-void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const {
+void OBJModel::GetVertices(uint32_t s, MeshVertex_t*& vertexData, uint32_t& vertexCount) const {
     assert(s < surfaces.size());
 
     OBJ::Surface_t surface = surfaces[s];
@@ -102,10 +113,10 @@ void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCo
     vertexData = new MeshVertex_t[vertexCount];
 
     int v;
-    for (size_t i=0; i<surface.faceCount; ++i) {
+    for (uint32_t i=0; i<surface.faceCount; ++i) {
         const OBJ::Face_t& face = faces[surface.faceBegin + i];
 
-        for (size_t j=0; j<3; ++j) {
+        for (uint32_t j=0; j<3; ++j) {
             const OBJ::FaceVertex_t& faceVert = face.verts[j];
 
             // Calculate vertex index
@@ -119,7 +130,7 @@ void OBJModel::GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCo
     }
 }
 
-void OBJModel::GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const {
+void OBJModel::GetIndices(uint32_t s, GLushort*& indexData, uint32_t& triangleCount) const {
     assert(s < surfaces.size());
 
     OBJ::Surface_t surface = surfaces[s];

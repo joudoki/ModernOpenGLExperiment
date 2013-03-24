@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdint>
 #include <cstdlib>
 
 #include "Rendering.h"
@@ -70,7 +71,7 @@ void setupOpenGL() {
     // Enable 3D ops
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
 
     // Setup windowing transform
     glViewport(0, 0, 800, 600);
@@ -186,10 +187,10 @@ Mesh* MakeAABBMesh(Program* program) {
     return mesh;
 }
 
-Mesh* LoadMesh(const Program* program, const ModelLoader* model, size_t meshIndex) {
+Mesh* LoadMesh(const Program* program, const ModelLoader* model, uint32_t meshIndex) {
     MeshVertex_t* vertexData = NULL;
     GLushort* indexData = NULL;
-    size_t vertexCount, triangleCount, indexCount;
+    uint32_t vertexCount, triangleCount, indexCount;
 
     model->GetVertices(meshIndex, vertexData, vertexCount);
     model->GetIndices(meshIndex,  indexData,  triangleCount);
@@ -269,7 +270,7 @@ int main(int argc, char* argv[]) {
     Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    ModelLoader* model = MD3Model::LoadFromFile("models/railgun.md3");
+    ModelLoader* model = OBJModel::LoadFromFile("models/rocketam.obj");
 
     if (model == NULL) {
         glfwTerminate();
@@ -277,16 +278,14 @@ int main(int argc, char* argv[]) {
     }
 
     string textureFiles[] = {
-        "textures/railgun1.tga",
-        "textures/railgun2.glow.tga",
-        "textures/railgun4.tga",
-        "textures/railgun3.tga"
+        "textures/rockammo2.tga",
+        "textures/rockammo.tga"
     };
 
     vector<Mesh*> meshes;
     vector<Texture*> textures;
 
-    LoadModel(textureShader, model, vector<string>(textureFiles, textureFiles + 4), meshes, textures);
+    LoadModel(textureShader, model, vector<string>(textureFiles, textureFiles + 2), meshes, textures);
     float cameraDistance = 48.0f;
 
     delete model;

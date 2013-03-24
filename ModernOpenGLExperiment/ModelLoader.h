@@ -3,6 +3,7 @@
 
 #include "Mesh.h"
 
+#include <cstdint>
 #include <iostream>
 
 // I was initially thinking I might do some sort of template specialization here...
@@ -25,7 +26,7 @@ public:
     /**
      * Returns the number of meshes countained within the model loaded by this loader
      */
-    virtual size_t GetMeshCount() const = 0;
+    virtual uint32_t GetMeshCount() const = 0;
 
     /**
      * Retrieves from the internal format a list of formatted vertices 
@@ -35,7 +36,7 @@ public:
      * vertexData  - Where to put the vertices
      * vertexCount - How many vertices there are in vertexData
      */
-    virtual void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const = 0;
+    virtual void GetVertices(uint32_t s, MeshVertex_t*& vertexData, uint32_t& vertexCount) const = 0;
 
     /**
      * Retrieves from the internal format the list of indices making
@@ -45,7 +46,7 @@ public:
      * indexData     - Where to put the indices
      * triangleCount - The number of primitives in indexData
      */
-    virtual void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const = 0;
+    virtual void GetIndices(uint32_t s, GLushort*& indexData, uint32_t& triangleCount) const = 0;
 };
 
 #endif

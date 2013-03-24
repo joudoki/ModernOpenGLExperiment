@@ -16,8 +16,8 @@ glm::vec3 Trackball::ScreenToTrackballCoordinates(int i, int j) const {
 	// Determine whether the point is on the sphere or the
 	// hyperboloid sheet and set the z value accordingly
 	float z = 2.0 * x2y2 <= r2
-		? sqrt(d)		        // Sphere
-		: r2/sqrt(4.0*x2y2);	// Hyperboloid
+		? sqrt(d)		            // Sphere
+		: r2/glm::sqrt(4.0f*x2y2);	// Hyperboloid
 	
 	return glm::vec3(p,z);
 }

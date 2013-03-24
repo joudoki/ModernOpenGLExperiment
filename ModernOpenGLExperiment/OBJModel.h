@@ -1,6 +1,8 @@
 #ifndef OBJMODEL_H
 #define OBJMODEL_H
 
+#include <cstdint>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -12,23 +14,16 @@
 
 namespace OBJ {
     typedef struct {
-        size_t vertex, texCoord, normal;
+        uint32_t vertex, texCoord, normal;
     } FaceVertex_t;
 
     typedef struct {
         FaceVertex_t verts[3];
-
-        // Take advantage of the layout of the struct in memory
-        // to allow indexing inside for easy parsing
-        size_t& operator[](size_t i) { 
-            assert(i < 9);
-            return *(reinterpret_cast<size_t*>(this) + i); 
-        };
     } Face_t;
 
     typedef struct {
-        size_t faceBegin;
-        size_t faceCount;
+        uint32_t faceBegin;
+        uint32_t faceCount;
         std::string name;
     } Surface_t;
 };
@@ -49,6 +44,9 @@ private:
     glm::vec3 ReadVec3(std::istream& infile) const;
     glm::vec2 ReadVec2(std::istream& infile) const;
 
+    OBJ::FaceVertex_t ReadFaceVertex(std::istream& infile) const;
+    OBJ::Face_t ReadFace(std::istream& infile) const;
+
     OBJModel(std::istream& inFile);
 
 public:
@@ -64,7 +62,7 @@ public:
             faces.size()        > 0;
     };
 
-    size_t GetMeshCount() const { return surfaces.size(); }
+    uint32_t GetMeshCount() const { return surfaces.size(); }
 
     /**
      * Retrieves from the internal format a list of formatted vertices 
@@ -75,7 +73,7 @@ public:
      * vertexData  - Where to put the vertices
      * vertexCount - How many vertices there are in vertexData
      */
-    void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const;
+    void GetVertices(uint32_t s, MeshVertex_t*& vertexData, uint32_t& vertexCount) const;
 
     /**
      * Retrieves from the internal format the list of indices making
@@ -85,7 +83,7 @@ public:
      * indexData     - Where to put the indices
      * triangleCount - The number of primitives in indexData
      */
-    void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const;
+    void GetIndices(uint32_t s, GLushort*& indexData, uint32_t& triangleCount) const;
 };
 
 #endif

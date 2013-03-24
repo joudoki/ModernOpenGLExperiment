@@ -1,6 +1,8 @@
 #ifndef MD3MODEL_H
 #define MD3MODEL_H
 
+#include <cstdint>
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -16,17 +18,17 @@
 namespace MD3 {
     typedef struct {
         char name[MD3_MAX_QPATH];
-        int flags;
+        int32_t flags;
 
-        int numFrames;
-        int numTags;
-        int numSurfaces;
-        int numSkins;
+        uint32_t numFrames;
+        uint32_t numTags;
+        uint32_t numSurfaces;
+        uint32_t numSkins;
 
-        int offsetFrames;
-        int offsetTags;
-        int offsetSurfaces;
-        int offsetEOF;
+        uint32_t offsetFrames;
+        uint32_t offsetTags;
+        uint32_t offsetSurfaces;
+        uint32_t offsetEOF;
     } Header_t;
 
     typedef struct {
@@ -44,31 +46,31 @@ namespace MD3 {
     } Tag_t;
 
     typedef struct {
-        int magic;
+        int32_t magic;
         char name[MD3_MAX_QPATH];
-        int flags;
+        int32_t flags;
     
-        int numFrames;
-        int numShaders;
-        int numVerts;
-        int numTriangles;
+        uint32_t numFrames;
+        uint32_t numShaders;
+        uint32_t numVerts;
+        uint32_t numTriangles;
 
-        int offsetTriangles;
-        int offsetShaders;
-        int offsetTexCoords;
-        int offsetVertexCoords;
-        int offsetEnd;
+        uint32_t offsetTriangles;
+        uint32_t offsetShaders;
+        uint32_t offsetTexCoords;
+        uint32_t offsetVertexCoords;
+        uint32_t offsetEnd;
     } Surface_t;
 
     typedef struct {
         char name[MD3_MAX_QPATH];
-        int index;
+        int32_t index;
     } Shader_t;
 
     typedef struct {
-        int a;
-        int b;
-        int c;
+        uint32_t a;
+        uint32_t b;
+        uint32_t c;
     } Triangle_t;
 
     typedef struct {
@@ -79,10 +81,8 @@ namespace MD3 {
     #define MD3_SCALE (1.0f/64.0f)
 
     typedef struct {
-        short x;
-        short y;
-        short z;
-        unsigned short n;
+        int16_t x,y,z;
+        uint16_t n;
     } Vertex_t;
 };
 
@@ -96,16 +96,16 @@ private:
     std::vector<MD3::Tag_t*> tags;
     std::vector<MD3::Surface_t*> surfaces;
 
-    static glm::vec3 DecodeNormal(GLushort index);
+    static glm::vec3 DecodeNormal(uint16_t index);
 
     MD3Model(std::ifstream& infile);
 
     // Functions to get pointers for a specific surface/frame
 
-    MD3::Vertex_t* GetVertices(size_t s, size_t f) const;
-    MD3::Shader_t* GetShaders(size_t s) const;
-    MD3::Triangle_t* GetTriangles(size_t s) const;
-    MD3::TexCoord_t* GetTexCoords(size_t s) const;
+    MD3::Vertex_t* GetVertices(uint32_t s, uint32_t f) const;
+    MD3::Shader_t* GetShaders(uint32_t s) const;
+    MD3::Triangle_t* GetTriangles(uint32_t s) const;
+    MD3::TexCoord_t* GetTexCoords(uint32_t s) const;
 
 public:
     static MD3Model* LoadFromFile(const char* filename);
@@ -114,7 +114,7 @@ public:
 
     bool IsValid() const { return buffer != NULL; }
 
-    size_t GetMeshCount() const { return header->numSurfaces; }
+    uint32_t GetMeshCount() const { return header->numSurfaces; }
 
     /**
      * Retrieves from the internal format a list of formatted vertices 
@@ -125,9 +125,9 @@ public:
      * vertexData  - Where to put the vertices
      * vertexCount - How many vertices there are in vertexData
      */
-    void GetVertices(size_t s, size_t f, MeshVertex_t*& vertexData, size_t& vertexCount) const;
+    void GetVertices(uint32_t s, uint32_t f, MeshVertex_t*& vertexData, uint32_t& vertexCount) const;
 
-    void GetVertices(size_t s, MeshVertex_t*& vertexData, size_t& vertexCount) const;
+    void GetVertices(uint32_t s, MeshVertex_t*& vertexData, uint32_t& vertexCount) const;
 
     /**
      * Retrieves from the internal format the list of indices making
@@ -137,9 +137,9 @@ public:
      * indexData     - Where to put the indices
      * triangleCount - The number of primitives in indexData
      */
-    void GetIndices(size_t s, GLushort*& indexData, size_t& triangleCount) const;
+    void GetIndices(uint32_t s, GLushort*& indexData, uint32_t& triangleCount) const;
     
-    MD3::Frame_t* GetFrame(size_t f);
+    MD3::Frame_t* GetFrame(uint32_t f);
 };
 
 #endif
