@@ -32,7 +32,8 @@ typedef struct {
 namespace ShaderType {
     enum ShaderType {
         VertexShader = GL_VERTEX_SHADER,
-        FragmentShader = GL_FRAGMENT_SHADER
+        FragmentShader = GL_FRAGMENT_SHADER,
+        GeometryShader = GL_GEOMETRY_SHADER
     };
 }
 

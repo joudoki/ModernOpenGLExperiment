@@ -26,12 +26,19 @@ private:
     void AcquireUniforms();
     void AcquireAttributes();
 
+    template <ShaderType::ShaderType T>
+    void Attach(Shader<T>* shader) {
+        assert(shader != NULL);
+        glAttachShader(programHandle, shader->GetHandle());
+    }
+
     // The only thing that really matters about this is that the location will be -1
     static const Uniform_t DEFAULT_UNIFORM;
     static const VertexAttribute_t DEFAULT_VERTEXATTRIBUTE;
 
 public:
-    static Program* CreateFromShaders(VertexShader* vertexShader, FragmentShader* fragmentShader);
+    static Program* CreateFromShaders(VertexShader* vs, FragmentShader* fs);
+    static Program* CreateFromShaders(VertexShader* vs, GeometryShader* gs, FragmentShader* fs);
 
     ~Program();
 

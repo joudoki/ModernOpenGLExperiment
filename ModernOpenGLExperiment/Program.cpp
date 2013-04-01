@@ -102,11 +102,11 @@ GLuint Program::GetAttributeID(const std::string& attrName) const {
         : attr->location;
 }
 
-Program* Program::CreateFromShaders(VertexShader* vertexShader,  FragmentShader* fragmentShader) {
+Program* Program::CreateFromShaders(VertexShader* vs,  FragmentShader* fs) {
     Program* program = new Program();
 
-    glAttachShader(program->programHandle,   vertexShader->GetHandle());
-    glAttachShader(program->programHandle, fragmentShader->GetHandle());
+    program->Attach(vs);
+    program->Attach(fs);
 
     program->Link();
 
@@ -116,6 +116,24 @@ Program* Program::CreateFromShaders(VertexShader* vertexShader,  FragmentShader*
     }
 
     return program;
+}
+
+Program* Program::CreateFromShaders(VertexShader* vs, GeometryShader* gs, FragmentShader* fs) {
+    Program* program = new Program();
+
+    program->Attach(vs);
+    program->Attach(gs);
+    program->Attach(fs);
+
+    program->Link();
+
+    if (program->IsValid()) {
+        program->AcquireUniforms();
+        program->AcquireAttributes();
+    }
+
+    return program;
+
 }
 
 std::string Program::GetLinkLog() const {

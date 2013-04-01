@@ -107,32 +107,78 @@ string readFile(const char* fileName) {
     return contents;
 }
 
-Program* MakeProgram(const string& vertexShaderSource, const string& fragmentShaderSource) {
-    VertexShader*     vertexShader = VertexShader::CompileFromSource(vertexShaderSource);
-    FragmentShader* fragmentShader = FragmentShader::CompileFromSource(fragmentShaderSource);
+// TODO: Consolidate these two functions which are very repetitive
+Program* MakeProgram(const string& vss, const string& fss) {
+    VertexShader* vs = VertexShader::CompileFromSource(vss);
+    if (!vs->IsValid()) {
+        fprintf(stderr, "Compile Error: %s\n", vs->GetCompileLog().c_str());
+        delete vs;
+        return NULL;
+    }
+    
+    FragmentShader* fs = FragmentShader::CompileFromSource(fss);
+    if (!fs->IsValid()) {
+        fprintf(stderr, "Compile Error: %s\n", fs->GetCompileLog().c_str());
 
-    if (!vertexShader->IsValid()) {
-        fprintf(stderr, "Compile Error: %s\n", vertexShader->GetCompileLog().c_str());
-
-        delete vertexShader;
+        delete vs;
+        delete fs;
 
         return NULL;
     }
 
-    if (!fragmentShader->IsValid()) {
-        fprintf(stderr, "Compile Error: %s\n", fragmentShader->GetCompileLog().c_str());
-
-        delete vertexShader;
-        delete fragmentShader;
-
-        return NULL;
-    }
-
-    Program* program = Program::CreateFromShaders(vertexShader, fragmentShader);
+    Program* program = Program::CreateFromShaders(vs, fs);
 
     // Don't need shaders after the program is linked
-    delete vertexShader;
-    delete fragmentShader;
+    delete vs;
+    delete fs;
+    
+    if (!program->IsValid()) {
+        fprintf(stderr, "Link Error: %s\n", program->GetLinkLog().c_str());
+        
+        delete program;
+
+        return NULL;
+    }
+
+    return program;
+}
+Program* MakeProgram(const string& vss, const string& gss, const string& fss) {
+    VertexShader* vs = VertexShader::CompileFromSource(vss);
+    if (!vs->IsValid()) {
+        fprintf(stderr, "Vertex Shader Compile Error: %s\n", vs->GetCompileLog().c_str());
+
+        delete vs;
+
+        return NULL;
+    }
+    
+    GeometryShader* gs = GeometryShader::CompileFromSource(gss);
+    if (!gs->IsValid()) {
+        fprintf(stderr, "Geometry Shader Compile Error: %s\n", gs->GetCompileLog().c_str());
+
+        delete vs;
+        delete gs;
+
+        return NULL;
+    }
+
+    FragmentShader* fs = FragmentShader::CompileFromSource(fss);
+    if (!fs->IsValid()) {
+        fprintf(stderr, "Compile Error: %s\n", fs->GetCompileLog().c_str());
+
+        delete vs;
+        delete gs;
+        delete fs;
+
+        return NULL;
+    }
+
+    Program* program = Program::CreateFromShaders(vs, gs, fs);
+
+    // Don't need shaders after the program is linked
+    delete vs;
+    delete gs;
+    delete fs;
     
     if (!program->IsValid()) {
         fprintf(stderr, "Link Error: %s\n", program->GetLinkLog().c_str());

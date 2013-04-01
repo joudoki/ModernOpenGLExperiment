@@ -59,5 +59,6 @@ public:
 
 typedef Shader<ShaderType::VertexShader>   VertexShader;
 typedef Shader<ShaderType::FragmentShader> FragmentShader;
+typedef Shader<ShaderType::GeometryShader> GeometryShader;
 
 #endif
