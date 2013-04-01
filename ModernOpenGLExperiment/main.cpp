@@ -21,6 +21,21 @@
 
 using namespace std;
 
+#define PRINTMAT4X4(x) printf( \
+    "[%f %f %f %f\n %f %f %f %f\n %f %f %f %f\n %f %f %f %f]\n", \
+    x[0][0], x[0][1], x[0][2], x[0][3], \
+    x[1][0], x[1][1], x[1][2], x[1][3], \
+    x[2][0], x[2][1], x[2][2], x[2][3], \
+    x[3][0], x[3][1], x[3][2], x[3][3]  \
+);
+
+#define PRINTMAT3X3(x) printf( \
+    "[%f %f %f\n %f %f %f\n %f %f %f]\n", \
+    x[0][0], x[0][1], x[0][2], \
+    x[1][0], x[1][1], x[1][2], \
+    x[2][0], x[2][1], x[2][2]  \
+);
+
 int acquireContext(int width, int height) {
     // Context Creation
     if (!glfwInit()) {
@@ -251,8 +266,8 @@ int main(int argc, char* argv[]) {
 
     // Load shaders
     Program* textureShader = MakeProgram(
-        readFile("glsl/textured.vert"),
-        readFile("glsl/textured.frag")
+        readFile("glsl/shaded.vert"),
+        readFile("glsl/shaded.frag")
     );
 
     Program* flatShader = MakeProgram(
@@ -270,7 +285,7 @@ int main(int argc, char* argv[]) {
     Program::SetUniform(textureShader->GetUniform("diffuseSampler"), (GLuint)0);
 
     // Setup objects
-    ModelLoader* model = OBJModel::LoadFromFile("models/rocketam.obj");
+    ModelLoader* model = MD3Model::LoadFromFile("models/rocketam.md3");
 
     if (model == NULL) {
         glfwTerminate();
@@ -278,8 +293,8 @@ int main(int argc, char* argv[]) {
     }
 
     string textureFiles[] = {
-        "textures/rockammo2.tga",
-        "textures/rockammo.tga"
+        "textures/rockammo.tga",
+        "textures/rockammo2.tga"
     };
 
     vector<Mesh*> meshes;
@@ -294,11 +309,13 @@ int main(int argc, char* argv[]) {
 
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
-    
+
     glm::mat4 project = glm::perspectiveFov(70.0f, (float) width, (float) height, 1.0f, 1024.0f);
     glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -cameraDistance));
     glm::mat4 viewRotate = glm::mat4();
     
+    //glm::vec4 lightPos = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) * viewTranslate;
+
     float time(0.0f), lastTime(0.0f);
 
     do {
@@ -313,18 +330,22 @@ int main(int argc, char* argv[]) {
             mouseX, mouseY
         );
 
+
         // Only render up to 60FPS
         if (time - lastTime >= 1/60.0f) {
             // Update the transformation matrix
             viewRotate = trackball.GetRotationMatrix();
 
-            glm::mat4 viewClip = project * viewTranslate * viewRotate;
-            
+            glm::mat4  modelTransform = project * viewTranslate * viewRotate;
+            glm::mat4 normalTransform = viewRotate; // Since viewRotate is orthonormal, its inverse transpose equals itself
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Render model
             textureShader->Bind();
-            Program::SetUniform(textureShader->GetUniform("transform"), viewClip);
+            Program::SetUniform(textureShader->GetUniform("modelTransform"), modelTransform);
+            Program::SetUniform(textureShader->GetUniform("normalTransform"), normalTransform);
+            //Program::SetUniform(textureShader->GetUniform("lightPos"), glm::vec3(lightPos));
 
             for (size_t i=0; i<meshes.size(); ++i) {
                 size_t texIndex = glm::min(textures.size()-1, i);
