@@ -321,7 +321,13 @@ int main(int argc, char* argv[]) {
         readFile("glsl/flatShade.frag")
     );
 
-    if (textureShader == NULL || flatShader == NULL) {
+    Program* normalShader = MakeProgram(
+        readFile("glsl/debugNormals.vert"),
+        readFile("glsl/debugNormals.geom"),
+        readFile("glsl/debugNormals.frag")
+    );
+
+    if (textureShader == NULL || flatShader == NULL || normalShader == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
@@ -388,10 +394,23 @@ int main(int argc, char* argv[]) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Render model
+            //*
             textureShader->Bind();
             Program::SetUniform(textureShader->GetUniform("modelTransform"), modelTransform);
             Program::SetUniform(textureShader->GetUniform("normalTransform"), normalTransform);
             //Program::SetUniform(textureShader->GetUniform("lightPos"), glm::vec3(lightPos));
+
+            for (size_t i=0; i<meshes.size(); ++i) {
+                size_t texIndex = glm::min(textures.size()-1, i);
+
+                Texture::Bind(0, textures[texIndex]);
+                meshes[i]->Render();
+            }
+            //*/
+
+            normalShader->Bind();
+            Program::SetUniform(normalShader->GetUniform("modelTransform"), modelTransform);
+            Program::SetUniform(normalShader->GetUniform("normalTransform"), normalTransform);
 
             for (size_t i=0; i<meshes.size(); ++i) {
                 size_t texIndex = glm::min(textures.size()-1, i);
@@ -416,6 +435,7 @@ int main(int argc, char* argv[]) {
     delete axis;
 
     delete textureShader;
+    delete normalShader;
     delete flatShader;
 
     for (size_t i=0; i<textures.size(); ++i)
