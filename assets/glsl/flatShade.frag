@@ -1,15 +1,14 @@
 #version 330 core
 
-flat in vec3 fColor;
+in VertexData {
+    vec4 coord;
+    vec4 normal;
+    vec2 texCoord;
+    vec4 color;
+} fragIn;
+
 out vec4 color;
 
 void main(void) {
-    color = vec4(fColor, 1.0);
-    
-    //color = vec4(
-    //    1.0,
-    //    gl_FragCoord.y / 600.0,
-    //    gl_FragCoord.x / 800.0,
-    //    1.0
-    //);
+    color = fragIn.color;
 }

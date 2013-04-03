@@ -1,22 +1,41 @@
-#version 330
+#version 330 core
 
 layout (triangles) in;
-layout (line_strip, max_vertices = 2) out;
+layout (line_strip, max_vertices = 6) out;
 
-in vec4 normal[];
-out float t;
+in VertexData {
+    vec4 coord;
+    vec4 normal;
+    vec2 texCoord;
+    vec4 color;
+} vertexIn[];
+
+out VertexData {
+    vec4 coord;
+    vec4 normal;
+    vec2 texCoord;
+    vec4 color;
+} vertexOut;
+
+const float NORMAL_SCALE    = 10.0;
+const vec4  NORMAL_COLOR_A  = vec4(1.0, 0.0, 0.0, 1.0);
+const vec4  NORMAL_COLOR_B  = vec4(0.0, 0.0, 1.0, 1.0); 
+
+void makeVertex(vec4 coord, vec4 color) {
+    gl_Position = coord;
+    vertexOut.coord = coord;
+    vertexOut.color = color;
+    EmitVertex();
+}
 
 void main() {
     for (int i=0; i<gl_in.length(); ++i) {
-        gl_Position = gl_in[i].gl_Position;
-        t = 0.0;
-        EmitVertex();
+        vec4 a = gl_in[i].gl_Position;
+        vec4 b = a + NORMAL_SCALE * vertexIn[i].normal;
+    
+        makeVertex(a, NORMAL_COLOR_A);
+        makeVertex(b, NORMAL_COLOR_B);
         
-        gl_Position = gl_in[i].gl_Position - 10.0 * normal[i];
-        t = 1.0;
-        EmitVertex();
         EndPrimitive();
-        
-        //gl_Position = modelTransform * gl_in[i].gl_Position + normalTransform * normal[i];
     }
 }

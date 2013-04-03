@@ -111,14 +111,14 @@ string readFile(const char* fileName) {
 Program* MakeProgram(const string& vss, const string& fss) {
     VertexShader* vs = VertexShader::CompileFromSource(vss);
     if (!vs->IsValid()) {
-        fprintf(stderr, "Compile Error: %s\n", vs->GetCompileLog().c_str());
+        fprintf(stderr, "Vertex Shader Compile Error:\n%s\n", vs->GetCompileLog().c_str());
         delete vs;
         return NULL;
     }
     
     FragmentShader* fs = FragmentShader::CompileFromSource(fss);
     if (!fs->IsValid()) {
-        fprintf(stderr, "Compile Error: %s\n", fs->GetCompileLog().c_str());
+        fprintf(stderr, "Fragment Shader Compile Error:\n%s\n", fs->GetCompileLog().c_str());
 
         delete vs;
         delete fs;
@@ -133,7 +133,7 @@ Program* MakeProgram(const string& vss, const string& fss) {
     delete fs;
     
     if (!program->IsValid()) {
-        fprintf(stderr, "Link Error: %s\n", program->GetLinkLog().c_str());
+        fprintf(stderr, "Link Error:\n%s\n", program->GetLinkLog().c_str());
         
         delete program;
 
@@ -145,7 +145,7 @@ Program* MakeProgram(const string& vss, const string& fss) {
 Program* MakeProgram(const string& vss, const string& gss, const string& fss) {
     VertexShader* vs = VertexShader::CompileFromSource(vss);
     if (!vs->IsValid()) {
-        fprintf(stderr, "Vertex Shader Compile Error: %s\n", vs->GetCompileLog().c_str());
+        fprintf(stderr, "Vertex Shader Compile Error:\n%s\n", vs->GetCompileLog().c_str());
 
         delete vs;
 
@@ -154,7 +154,7 @@ Program* MakeProgram(const string& vss, const string& gss, const string& fss) {
     
     GeometryShader* gs = GeometryShader::CompileFromSource(gss);
     if (!gs->IsValid()) {
-        fprintf(stderr, "Geometry Shader Compile Error: %s\n", gs->GetCompileLog().c_str());
+        fprintf(stderr, "Geometry Shader Compile Error:\n%s\n", gs->GetCompileLog().c_str());
 
         delete vs;
         delete gs;
@@ -164,7 +164,7 @@ Program* MakeProgram(const string& vss, const string& gss, const string& fss) {
 
     FragmentShader* fs = FragmentShader::CompileFromSource(fss);
     if (!fs->IsValid()) {
-        fprintf(stderr, "Compile Error: %s\n", fs->GetCompileLog().c_str());
+        fprintf(stderr, "Fragment Compile Error:\n%s\n", fs->GetCompileLog().c_str());
 
         delete vs;
         delete gs;
@@ -181,7 +181,7 @@ Program* MakeProgram(const string& vss, const string& gss, const string& fss) {
     delete fs;
     
     if (!program->IsValid()) {
-        fprintf(stderr, "Link Error: %s\n", program->GetLinkLog().c_str());
+        fprintf(stderr, "Link Error:\n%s\n", program->GetLinkLog().c_str());
         
         delete program;
 
@@ -312,22 +312,17 @@ int main(int argc, char* argv[]) {
 
     // Load shaders
     Program* textureShader = MakeProgram(
-        readFile("glsl/shaded.vert"),
+        readFile("glsl/default.vert"),
         readFile("glsl/shaded.frag")
     );
 
-    Program* flatShader = MakeProgram(
-        readFile("glsl/flatShade.vert"),
+    Program* normalShader = MakeProgram(
+        readFile("glsl/default.vert"),
+        readFile("glsl/debugNormals.geom"),
         readFile("glsl/flatShade.frag")
     );
 
-    Program* normalShader = MakeProgram(
-        readFile("glsl/debugNormals.vert"),
-        readFile("glsl/debugNormals.geom"),
-        readFile("glsl/debugNormals.frag")
-    );
-
-    if (textureShader == NULL || flatShader == NULL || normalShader == NULL) {
+    if (textureShader == NULL || normalShader == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
@@ -357,8 +352,6 @@ int main(int argc, char* argv[]) {
 
     delete model;
 
-    Mesh* axis = MakeAxisMesh(flatShader);
-
     // Setup trackball interface
     Trackball trackball(width, height, 1.0f, glm::mat4());
 
@@ -366,12 +359,13 @@ int main(int argc, char* argv[]) {
     glm::mat4 viewTranslate = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -cameraDistance));
     glm::mat4 viewRotate = glm::mat4();
     
-    //glm::vec4 lightPos = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) * viewTranslate;
+    glm::vec4 lightPos = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) * viewTranslate;
 
     float time(0.0f), lastTime(0.0f);
 
     do {
         time = (float) glfwGetTime();
+
         glfwPollEvents();
 
         // Update trackball state
@@ -382,65 +376,59 @@ int main(int argc, char* argv[]) {
             mouseX, mouseY
         );
 
-
         // Only render up to 60FPS
-        if (time - lastTime >= 1/60.0f) {
-            // Update the transformation matrix
-            viewRotate = trackball.GetRotationMatrix();
+        if (time - lastTime < 1/60.0f) continue;
 
-            glm::mat4  modelTransform = project * viewTranslate * viewRotate;
-            glm::mat4 normalTransform = viewRotate; // Since viewRotate is orthonormal, its inverse transpose equals itself
+        // Update the transformation matrix
+        viewRotate = trackball.GetRotationMatrix();
+        
+        // Since viewRotate is orthonormal, its inverse transpose equals itself
+        glm::mat3 normalTransform(viewRotate);
+        glm::mat4 modelTransform = project * viewTranslate * viewRotate;
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            // Render model
-            //*
-            textureShader->Bind();
-            Program::SetUniform(textureShader->GetUniform("modelTransform"), modelTransform);
-            Program::SetUniform(textureShader->GetUniform("normalTransform"), normalTransform);
-            //Program::SetUniform(textureShader->GetUniform("lightPos"), glm::vec3(lightPos));
+        // Render model
+        //*
+        textureShader->Bind();
+        Program::SetUniform(textureShader->GetUniform("modelTransform"),  modelTransform);
+        Program::SetUniform(textureShader->GetUniform("normalTransform"), normalTransform);
 
-            for (size_t i=0; i<meshes.size(); ++i) {
-                size_t texIndex = glm::min(textures.size()-1, i);
+        for (size_t i=0; i<meshes.size(); ++i) {
+            size_t texIndex = glm::min(textures.size()-1, i);
 
-                Texture::Bind(0, textures[texIndex]);
-                meshes[i]->Render();
-            }
-            //*/
-
-            normalShader->Bind();
-            Program::SetUniform(normalShader->GetUniform("modelTransform"), modelTransform);
-            Program::SetUniform(normalShader->GetUniform("normalTransform"), normalTransform);
-
-            for (size_t i=0; i<meshes.size(); ++i) {
-                size_t texIndex = glm::min(textures.size()-1, i);
-
-                Texture::Bind(0, textures[texIndex]);
-                meshes[i]->Render();
-            }
-
-            flatShader->Bind();
-            Program::SetUniform(flatShader->GetUniform("transform"), project * viewRotate);
-            axis->Render();
-
-            glfwSwapBuffers();
-            lastTime = time;
+            Texture::Bind(0, textures[texIndex]);
+            meshes[i]->Render();
         }
-    } while (!glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED));
+        //*/
+
+        //*
+        normalShader->Bind();
+        Program::SetUniform(normalShader->GetUniform("modelTransform"),  modelTransform);
+        Program::SetUniform(normalShader->GetUniform("normalTransform"), normalTransform);
+
+        for (size_t i=0; i<meshes.size(); ++i)
+            meshes[i]->Render();
+        //*/
+
+        glfwSwapBuffers();
+        lastTime = time;
+
+    } while (
+        !glfwGetKey(GLFW_KEY_ESC) && 
+        glfwGetWindowParam(GLFW_OPENED)
+    );
 
     // Cleanup
     for (auto it=meshes.begin(); it!=meshes.end(); ++it)
         delete (*it);
 
-    delete axis;
+    for (size_t i=0; i<textures.size(); ++i)
+        delete textures[i];
 
     delete textureShader;
     delete normalShader;
-    delete flatShader;
 
-    for (size_t i=0; i<textures.size(); ++i)
-        delete textures[i];
-    
     glfwTerminate();
     return EXIT_SUCCESS;
 }

@@ -68,6 +68,10 @@ public:
     static void SetUniform(Uniform_t const * uniform, const glm::mat4& value) {
         glUniformMatrix4fv(uniform->location, 1, GL_FALSE, glm::value_ptr(value));
     }
+
+    static void SetUniform(Uniform_t const * uniform, const glm::mat3& value) {
+        glUniformMatrix3fv(uniform->location, 1, GL_FALSE, glm::value_ptr(value));
+    }
 };
 
 #endif

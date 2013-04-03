@@ -1,18 +1,24 @@
 #version 330 core
 
 uniform sampler2D diffuseSampler;
-uniform vec3      lightPosition;
-uniform vec3      lightIntensity;
 
-in vec2 fTex;
-in vec3 fNorm;
+uniform Light {
+    vec3 position;
+    vec3 intensity;
+} light;
+
+in VertexData {
+    vec4 coord;
+    vec4 normal;
+    vec2 texCoord;
+    vec4 color;
+} fragIn;
 
 out vec4 color;
 
 void main(void) {
-    //color = vec4(vec3(0.5),1.0);
-    //color = vec4(fTex.x, fTex.y, 0.0, 1.0);
-    //color = vec4(fNorm, 1.0);
-    
-	color = texture(diffuseSampler, fTex);
+    //color.rgb = vec3(0.5);
+    //color.rg  = fragIn.texCoord;
+    //color     = fragIn.normal;
+	color = texture(diffuseSampler, fragIn.texCoord);
 }
